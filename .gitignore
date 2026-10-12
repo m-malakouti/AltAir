@@ -24,3 +24,11 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
+
+coverage/
+.env
+.env.*
+!.env.example
+
+server/**/bin/
+server/**/obj/

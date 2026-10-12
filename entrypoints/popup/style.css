@@ -1,1 +1,4 @@
-body { width: 360px; }
+body {
+  width: 380px;
+  min-height: 0;
+}

@@ -1,0 +1,9 @@
+node_modules/
+.wxt/
+.output/
+coverage/
+package-lock.json
+public/
+assets/
+
+server/

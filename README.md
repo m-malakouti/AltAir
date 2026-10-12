@@ -12,11 +12,19 @@ WXT, React, TypeScript, and Manifest V3.
 - Browser API calls isolated in `lib/browser/side-panel.ts`.
 - Persian document language, RTL direction, and UTF-8 metadata on both pages.
 - TypeScript strict mode.
-- No backend or local data features in this foundation.
+- Local free features remain independent of the optional market proxy.
 
-The current styles are a minimal dark foundation. The complete light/dark theme
-engine, glass components, and bundled Vazirmatn/Inter fonts belong to later work.
-System fonts provide the current fallback.
+The shared design system includes glass surfaces, semantic color tokens, light/dark
+and system themes, persistent appearance preferences, and keyboard focus styles.
+See [design system](docs/design-system.md) for behavior and acceptance checks.
+Vazir 13.0.1 is bundled locally in regular, medium, and bold weights for offline use.
+Font source and licenses are included in public/fonts/vazir.
+
+## Free bookmark foundation
+
+Versioned local bookmark and category storage, immutable CRUD, Persian search,
+URL validation, and coordinated writes are implemented. The Side Panel includes a bookmark manager with compact icon-only add, edit, delete, and search controls. Import/export is a future issue. No account or network connection is required.
+See [bookmark storage](docs/bookmark-storage.md).
 
 ## Development
 
@@ -34,8 +42,9 @@ The production extension is generated at `.output/chrome-mv3`.
 ## Permissions and browser support
 
 WXT derives `side_panel.default_path: "sidepanel.html"` and the `sidePanel`
-permission from the Side Panel entrypoint. This is the only requested permission.
-There are no host permissions, background service worker, or content scripts.
+permission from the Side Panel entrypoint. The storage permission persists the
+appearance preferences, market cache, and bookmarks in chrome.storage.local.
+An optional market proxy adds host access only for its configured origin. There is no background service worker or content script.
 
 The minimum Chrome version is 116 because opening the Side Panel from the Popup
 uses `sidePanel.open()`. Edge must support the same API; verify with a current
@@ -52,10 +61,12 @@ Edge build before declaring compatibility.
 7. Confirm the Side Panel renders Persian text and remains usable at narrow widths.
 8. Navigate to another tab and verify the global panel remains available.
 9. Inspect both pages for console errors. Reload the extension and repeat.
-10. Verify the built Manifest requests only `sidePanel`, with no host access.
+10. Verify the built Manifest requests only `sidePanel` and `storage`, plus only the configured market proxy origin when enabled.
 
 A production build and static checks do not replace these browser checks.
-There is currently no automated test runner in the project.
+Vitest covers the browser-adapter contracts. Run `npm run check` for formatting,
+lint, TypeScript, tests, and build. See [engineering standards](docs/engineering.md)
+for architecture, workflow, and CI details.
 
 ## Dependency security
 
@@ -69,3 +80,16 @@ Audit checked on 2026-10-12:
 
 Investigate compatible dependency updates before release. A production-only audit
 with zero findings does not establish overall security.
+
+## Market API preparation
+
+The Navasan USD widget and ASP.NET Core proxy support a verified local development
+connection with prices in toman. Production use requires server configuration and
+redistribution approval; API credentials stay outside extension source and output.
+See [market setup and limitations](docs/market-api.md).
+
+## New Tab and weather
+
+Popup, Side Panel, and New Tab share the workspace preferences. A minimal weather
+widget asks for a city on first use. See [weather and New Tab](docs/weather-newtab.md)
+for local setup, commercial-provider requirements, and acceptance checks.
