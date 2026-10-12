@@ -89,6 +89,8 @@ export function WeatherCard() {
           if (!controller.signal.aborted) setResult({ key, weather: valid });
           if (
             Date.now() - Date.parse(valid.fetchedAt) < 900_000 &&
+            valid.hourly !== undefined &&
+            tick === 0 &&
             Date.now() - Date.parse(valid.observedAt) < 3_600_000
           )
             return;
@@ -225,6 +227,54 @@ export function WeatherCard() {
             </div>
           </div>
         </details>
+      )}
+      {weather && (
+        <div className="hourly-forecast">
+          <h3>پیش‌بینی ۲۴ ساعت آینده</h3>
+          <p className="helper-text">
+            ساعت محلی شهر انتخاب‌شده{stale ? ' · دادهٔ قدیمی / تأییدنشده' : ''}
+          </p>
+          {weather.hourly?.some((hour) => Date.parse(hour.time) > now) ? (
+            <div
+              className="hourly-strip"
+              tabIndex={0}
+              role="region"
+              aria-label="پیش‌بینی ساعتی؛ برای ساعت‌های بعد پیمایش کن"
+            >
+              {weather.hourly
+                .filter((hour) => Date.parse(hour.time) > now)
+                .map((hour) => {
+                  const description = weatherDescription(hour.code, hour.isDay);
+                  return (
+                    <div className="hourly-item" key={hour.time}>
+                      <time dateTime={hour.time}>
+                        {new Date(hour.time).toLocaleString('fa-IR', {
+                          timeZone: weather.timezone ?? 'UTC',
+                          weekday: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false,
+                        })}
+                      </time>
+                      <span className="weather-condition" aria-label={description.text}>
+                        {description.symbol}
+                      </span>
+                      <strong dir="ltr">{Math.round(hour.temperature)}°C</strong>
+                      <span>{description.text}</span>
+                      <small>
+                        بارش{' '}
+                        {hour.precipitationProbability === null
+                          ? '—'
+                          : `${hour.precipitationProbability}٪`}
+                      </small>
+                    </div>
+                  );
+                })}
+            </div>
+          ) : (
+            <p className="helper-text">پیش‌بینی ساعتی در دسترس نیست؛ آب‌وهوا را تازه‌سازی کن.</p>
+          )}
+        </div>
       )}
       {ready && (!city || choosing) && (
         <div className="weather-picker">

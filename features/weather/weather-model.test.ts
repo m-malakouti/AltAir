@@ -40,3 +40,24 @@ describe('weather contracts', () => {
     expect(weatherDescription(10, true).text).toBe('وضعیت نامشخص');
   });
 });
+
+describe('hourly forecasts', () => {
+  const hour = {
+    time: '2026-10-12T11:00:00Z',
+    temperature: 20,
+    code: 61,
+    isDay: true,
+    precipitationProbability: 70,
+  };
+  it('accepts future forecasts and city timezone', () => {
+    expect(
+      parseWeather({ ...weather, hourly: [hour], timezone: 'Asia/Tehran' }, now).hourly,
+    ).toEqual([hour]);
+  });
+  it('rejects out of order hours and invalid probability', () => {
+    expect(() => parseWeather({ ...weather, hourly: [hour, hour] }, now)).toThrow();
+    expect(() =>
+      parseWeather({ ...weather, hourly: [{ ...hour, precipitationProbability: 101 }] }, now),
+    ).toThrow();
+  });
+});

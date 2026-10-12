@@ -1,11 +1,9 @@
-import { WeatherCard } from '@/features/weather/ui/WeatherCard';
+import { WorkspaceSegments } from '@/components/WorkspaceSegments';
 import { Icon } from '@/components/ui/Icon';
 import { useState } from 'react';
 import { WorkspaceShell } from '@/components/WorkspaceShell';
 import { AppearanceCard } from '@/components/AppearanceCard';
 import { Button } from '@/components/ui/Button';
-import { BookmarkManager } from '@/features/bookmarks/ui/BookmarkManager';
-import { CurrencyBoard } from '@/features/market/ui/CurrencyBoard';
 
 export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab' }) {
   const [view, setView] = useState<'workspace' | 'appearance'>('workspace');
@@ -33,9 +31,7 @@ export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab
       </nav>
       {view === 'workspace' ? (
         <>
-          <BookmarkManager />
-          <WeatherCard />
-          <CurrencyBoard />
+          <WorkspaceSegments />
         </>
       ) : (
         <>

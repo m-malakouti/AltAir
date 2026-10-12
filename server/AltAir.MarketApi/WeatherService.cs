@@ -5,7 +5,9 @@ using Microsoft.Extensions.Caching.Memory;
 namespace AltAir.MarketApi;
 
 public sealed record WeatherCity(long Id, string Name, string Country, string Region, double Latitude, double Longitude);
-public sealed record WeatherNow(double Temperature, int Code, bool IsDay, DateTimeOffset ObservedAt, DateTimeOffset FetchedAt);
+public sealed record WeatherNow(double Temperature, int Code, bool IsDay, DateTimeOffset ObservedAt, DateTimeOffset FetchedAt)
+{ public WeatherHour[] Hourly { get; init; } = []; public string Timezone { get; init; } = "UTC"; }
+public sealed record WeatherHour(DateTimeOffset Time, double Temperature, int Code, bool IsDay, int? PrecipitationProbability);
 
 public sealed class WeatherService(IHttpClientFactory clients, IMemoryCache cache, TimeProvider clock) : IDisposable
 {
@@ -43,7 +45,7 @@ public sealed class WeatherService(IHttpClientFactory clients, IMemoryCache cach
         await gate.WaitAsync(token);
         try {
             if (cache.TryGetValue<WeatherNow>(key, out var saved) && saved is not null) return saved;
-            var url = FormattableString.Invariant($"https://api.open-meteo.com/v1/forecast?latitude={latitude:F4}&longitude={longitude:F4}&current=temperature_2m,weather_code,is_day&temperature_unit=celsius&timeformat=unixtime&timezone=GMT");
+            var url = FormattableString.Invariant($"https://api.open-meteo.com/v1/forecast?latitude={latitude:F4}&longitude={longitude:F4}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day,precipitation_probability&forecast_hours=25&temperature_unit=celsius&timeformat=unixtime&timezone=auto");
             using var response = await clients.CreateClient("weather").GetAsync(url, token);
             response.EnsureSuccessStatusCode();
             var weather = Parse(await response.Content.ReadAsStringAsync(token), clock.GetUtcNow());
@@ -64,7 +66,35 @@ public sealed class WeatherService(IHttpClientFactory clients, IMemoryCache cach
         if (!double.IsFinite(temp) || temp is < -100 or > 70 || code is < 0 or > 99 ||
             day is < 0 or > 1 || observed < DateTimeOffset.UnixEpoch || observed > now.AddMinutes(10))
             throw new InvalidDataException();
-        return new WeatherNow(temp, code, day == 1, observed, now);
+        var hours = new List<WeatherHour>();
+        if (root.TryGetProperty("hourly", out var hourly))
+        {
+            if (root.GetProperty("hourly_units").GetProperty("temperature_2m").GetString() != "°C") throw new InvalidDataException();
+            var times = hourly.GetProperty("time");
+            var temperatures = hourly.GetProperty("temperature_2m");
+            var codes = hourly.GetProperty("weather_code");
+            var days = hourly.GetProperty("is_day");
+            var rain = hourly.GetProperty("precipitation_probability");
+            var count = times.GetArrayLength();
+            if (count > 48 || new[] { temperatures, codes, days, rain }.Any(a => a.GetArrayLength() != count)) throw new InvalidDataException();
+            DateTimeOffset? previous = null;
+            for (var i = 0; i < count; i++)
+            {
+                var time = DateTimeOffset.FromUnixTimeSeconds(times[i].GetInt64());
+                if (previous is not null && time <= previous) throw new InvalidDataException();
+                previous = time;
+                var t = temperatures[i].GetDouble();
+                var c = codes[i].GetInt32();
+                var d = days[i].GetInt32();
+                int? p = rain[i].ValueKind == JsonValueKind.Null ? null : rain[i].GetInt32();
+                if (!double.IsFinite(t) || t is < -100 or > 70 || c is < 0 or > 99 || d is < 0 or > 1 || p is < 0 or > 100) throw new InvalidDataException();
+                if (time > now && time <= now.AddHours(24)) hours.Add(new(time, t, c, d == 1, p));
+            }
+        }
+        return new WeatherNow(temp, code, day == 1, observed, now) {
+            Hourly = hours.ToArray(),
+            Timezone = root.TryGetProperty("timezone", out var timezone) ? timezone.GetString() ?? "UTC" : "UTC"
+        };
     }
     public void Dispose() => gate.Dispose();
 }

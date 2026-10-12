@@ -93,3 +93,38 @@ See [market setup and limitations](docs/market-api.md).
 Popup, Side Panel, and New Tab share the workspace preferences. A minimal weather
 widget asks for a city on first use. See [weather and New Tab](docs/weather-newtab.md)
 for local setup, commercial-provider requirements, and acceptance checks.
+
+## Movable workspace and sticky notes
+
+Side Panel and New Tab contain four independently movable sections: bookmarks,
+weather, currencies, and notes. Drag a section by its grip onto another section,
+or use the up/down buttons (also usable with keyboard or touch). Order is saved
+locally and shared between workspace views.
+
+Sticky notes support adding, editing, three colors, and confirmed deletion.
+Press Save after editing; unsaved changes are explicitly indicated. Notes stay
+on this device in extension storage. Storage writes use an exclusive Web Lock
+and preserve other notes written by another open view.
+
+Weather shows a horizontally scrollable forecast for the next 24 hours, including
+temperature, conditions, and precipitation probability. Times use the selected
+city's timezone. The backend requests hourly data from
+[Open-Meteo](https://open-meteo.com/en/docs), caches it for 15 minutes, and omits
+elapsed forecast hours. Restart the local API after updating its code and reload
+the extension. Old weather caches remain readable and trigger an hourly refresh.
+
+## Custom page layout
+
+The New Tab uses a 12-track CSS Grid inspired by
+[Grid by Example: Nested Grid](https://gridbyexample.com/examples/example21/).
+Calendar, bookmarks, weather, currencies and notes participate in the same grid;
+the calendar defaults to 8 tracks and other cards to 4. Each widget contains its
+own inner layout. Below 900px the cards use the full width for readability.
+
+The icon-only customization control reveals drag handles, accessible previous/
+next controls, width cycling (4/6/8/12), taller-card toggle, visibility toggles,
+and layout reset. Changes persist in `altAir.workspace.layout.v2`, synchronizing
+open views. Existing v1 order is migrated without rewriting user content. Hidden
+widgets remain mounted so unsaved drafts survive hide/show. Reset affects only
+layout. Calendar date numbers remain visible; action buttons use icons with
+accessible names and tooltips.

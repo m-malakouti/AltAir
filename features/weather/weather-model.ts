@@ -12,6 +12,15 @@ export interface WeatherNow {
   isDay: boolean;
   observedAt: string;
   fetchedAt: string;
+  hourly?: WeatherHour[];
+  timezone?: string;
+}
+export interface WeatherHour {
+  time: string;
+  temperature: number;
+  code: number;
+  isDay: boolean;
+  precipitationProbability: number | null;
 }
 function object(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null) throw new Error('Invalid weather data.');
@@ -47,6 +56,47 @@ export function parseCity(value: unknown): WeatherCity {
 }
 export function parseWeather(value: unknown, now = Date.now()): WeatherNow {
   const data = object(value);
+  let hourly: WeatherHour[] | undefined;
+  if (data.hourly !== undefined) {
+    if (!Array.isArray(data.hourly) || data.hourly.length > 48)
+      throw new Error('Invalid hourly forecast.');
+    let previous = 0;
+    hourly = data.hourly.map((value: unknown) => {
+      const hour = object(value);
+      const time = typeof hour.time === 'string' ? Date.parse(hour.time) : NaN;
+      if (
+        !Number.isFinite(time) ||
+        time <= previous ||
+        typeof hour.temperature !== 'number' ||
+        !Number.isFinite(hour.temperature) ||
+        hour.temperature < -100 ||
+        hour.temperature > 70 ||
+        typeof hour.code !== 'number' ||
+        !Number.isInteger(hour.code) ||
+        hour.code < 0 ||
+        hour.code > 99 ||
+        typeof hour.isDay !== 'boolean' ||
+        (hour.precipitationProbability !== null &&
+          (typeof hour.precipitationProbability !== 'number' ||
+            !Number.isInteger(hour.precipitationProbability) ||
+            hour.precipitationProbability < 0 ||
+            hour.precipitationProbability > 100))
+      )
+        throw new Error('Invalid hourly forecast.');
+      previous = time;
+      return {
+        time: hour.time as string,
+        temperature: hour.temperature,
+        code: hour.code,
+        isDay: hour.isDay,
+        precipitationProbability: hour.precipitationProbability,
+      };
+    });
+  }
+  if (data.timezone !== undefined) {
+    if (typeof data.timezone !== 'string') throw new Error('Invalid timezone.');
+    new Intl.DateTimeFormat('fa-IR', { timeZone: data.timezone });
+  }
   if (
     typeof data.temperature !== 'number' ||
     !Number.isFinite(data.temperature) ||
@@ -71,6 +121,8 @@ export function parseWeather(value: unknown, now = Date.now()): WeatherNow {
     isDay: data.isDay,
     observedAt: data.observedAt,
     fetchedAt: data.fetchedAt,
+    ...(hourly !== undefined ? { hourly } : {}),
+    ...(typeof data.timezone === 'string' ? { timezone: data.timezone } : {}),
   };
 }
 export function weatherDescription(code: number, isDay: boolean): { symbol: string; text: string } {
