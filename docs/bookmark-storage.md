@@ -85,3 +85,25 @@ failed with HTTP 429. After reloading the unpacked extension, verify:
 4. Cancel deletion, then confirm deletion of the disposable bookmark.
 5. Check keyboard focus, icon tooltips, both themes, and a 320px panel without overflow.
 6. Confirm storage changes propagate between two views.
+
+## Frequent-site shortcuts
+
+The bookmark list can optionally prepend up to six browser-ranked sites using
+`topSites`, declared in `optional_permissions`. The lightning icon opens the
+explanation and enable/disable controls. Permission is requested only on the
+user's click; disabling removes it. Revocation clears the in-memory list.
+
+Ranking is provided by Chrome, not a custom visit counter. Only HTTP(S) URLs
+without credentials are accepted. Duplicate hostnames (including www variants),
+manually bookmarked domains and hidden domains are excluded, then the first six
+remaining entries are selected. Search filters those six. Pinning saves a normal
+permanent bookmark and removes that domain from the automatic suggestions.
+Hidden domains persist locally and can be restored together from the controls.
+
+The candidate list is not persisted or sent to the backend. Existing favicon
+previews fetch icons directly from the displayed HTTPS site, with no referrer.
+The localhost preview shows an unsupported message; real history and the browser
+permission prompt must be checked in the installed extension after Reload.
+
+References: https://developer.chrome.com/docs/extensions/reference/api/topSites
+and https://developer.chrome.com/docs/extensions/reference/api/permissions.

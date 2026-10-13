@@ -1,3 +1,4 @@
+import { AccountCard } from '@/features/auth/ui/AccountCard';
 import { Icon } from './ui/Icon';
 import type { ReactNode } from 'react';
 import { useTheme } from '@/features/appearance/use-theme';
@@ -16,7 +17,10 @@ export function WorkspaceShell({
   return (
     <div className={`workspace workspace--${surface}`}>
       <BrandHeader />
-      <main className="workspace-content">{children}</main>
+      <main className="workspace-content">
+        {surface !== 'newtab' && <AccountCard />}
+        {children}
+      </main>
       {error && (
         <Notice>
           {error}

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.RateLimiting;
 using AltAir.MarketApi;
 using System.Threading.RateLimiting;
@@ -5,6 +6,12 @@ using System.Threading.RateLimiting;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<NavasanOptions>(builder.Configuration.GetSection("Navasan"));
 builder.Services.AddSingleton(TimeProvider.System);
+var authDirectory = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "auth");
+var protection = builder.Services.AddDataProtection().SetApplicationName("AltAir.LocalAuth")
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(authDirectory, "keys")));
+if (OperatingSystem.IsWindows()) protection.ProtectKeysWithDpapi();
+builder.Services.AddSingleton(services => new ProfileStore(services.GetRequiredService<IDataProtectionProvider>(), Path.Combine(authDirectory, "profiles.protected")));
+builder.Services.AddSingleton<AuthService>();
 builder.Services.AddHttpClient("navasan", client => client.Timeout = TimeSpan.FromSeconds(10))
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 // Navasan authenticates in its URL. Never log provider request URLs.
@@ -16,10 +23,13 @@ builder.Services.AddHttpClient("weather", client => client.Timeout = TimeSpan.Fr
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
     policy.WithOrigins(builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [])
-        .WithMethods("GET")));
+        .WithMethods("GET", "POST").WithHeaders("Content-Type", "Authorization")));
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions
+        { PermitLimit = 30, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
     options.AddFixedWindowLimiter("quotes", limiter =>
     {
         limiter.PermitLimit = 60;
@@ -68,4 +78,5 @@ app.MapGet("/api/weather/current", async (double latitude, double longitude, Wea
     { return Results.Json(new { code = "weather_unavailable" }, statusCode: 503); }
 }).RequireRateLimiting("quotes");
 
+app.MapLocalAuth();
 app.Run();

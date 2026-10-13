@@ -15,7 +15,7 @@ const titles = {
   calendar: 'تقویم',
   bookmarks: 'بوکمارک‌ها',
   weather: 'آب‌وهوا',
-  currencies: 'نرخ ارز',
+  currencies: 'نرخ بازار',
   notes: 'یادداشت‌ها',
 };
 const icons: Record<WidgetId, IconName> = {

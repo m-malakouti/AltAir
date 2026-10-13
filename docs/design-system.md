@@ -75,3 +75,15 @@ Manual acceptance:
 No third-party visual dependency or remote font is required. Tailwind remains
 optional for future styling; the current shared CSS establishes the token system.
 The original starter toolbar icons are still pending a separate brand-asset task.
+
+## Embedded font delivery
+
+The unchanged Vazir 13.0.1 regular, medium, and bold WOFF2 files are embedded in
+styles/vazir.css as data URLs and imported by the shared stylesheet. This avoids
+font URL resolution differences between localhost and the installed New Tab
+origin. Source files and license notices remain in public/fonts/vazir. The
+embedded bytes were verified identical to those original files. This generated
+stylesheet is excluded from Prettier. If font assets change, regenerate all three
+font-face data URLs from their source files. Browser text settings and scaling can
+still affect rendering. Installed extension updates require Reload in the
+extensions manager; refreshing localhost does not reload the extension package.

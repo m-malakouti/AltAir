@@ -26,7 +26,7 @@ export function CurrencyBoard() {
       } catch {
         if (alive && current === revision) {
           setReady(false);
-          setError('خواندن ارزهای دلخواه انجام نشد؛ پنل را دوباره باز کن.');
+          setError('خواندن نرخ‌های دلخواه انجام نشد؛ پنل را دوباره باز کن.');
         }
       }
     }
@@ -45,19 +45,19 @@ export function CurrencyBoard() {
     try {
       setSelected(await setFavorite(code, checked));
     } catch {
-      setError('انتخاب ارز ذخیره نشد. دوباره تلاش کن.');
+      setError('انتخاب نرخ ذخیره نشد. دوباره تلاش کن.');
     } finally {
       setBusy(false);
     }
   }
   return (
-    <section className="currency-board" aria-label="ارزهای دلخواه">
+    <section className="currency-board" aria-label="نرخ‌های دلخواه">
       <details className="currency-picker">
-        <summary className="icon-button" aria-label="افزودن یا حذف ارز" title="افزودن یا حذف ارز">
+        <summary className="icon-button" aria-label="افزودن یا حذف نرخ" title="افزودن یا حذف نرخ">
           <Icon name="plus" />
         </summary>
         <fieldset disabled={!ready || busy}>
-          <legend>ارزهای دلخواه</legend>
+          <legend>نرخ‌های دلخواه</legend>
           {currencies.map((item) => (
             <label key={item.code}>
               <input
@@ -68,7 +68,7 @@ export function CurrencyBoard() {
                 }}
               />
               <span>{item.name}</span>
-              <small dir="ltr">{item.code}</small>
+              <small dir="ltr">{item.symbol}</small>
             </label>
           ))}
         </fieldset>
@@ -78,7 +78,7 @@ export function CurrencyBoard() {
         <DollarCard key={code} code={code} />
       ))}
       {ready && selected.length === 0 && (
-        <p className="helper-text">با + ارز دلخواهت را انتخاب کن.</p>
+        <p className="helper-text">با + ارز، طلا یا سکهٔ دلخواهت را انتخاب کن.</p>
       )}
     </section>
   );

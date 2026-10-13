@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { currencies } from '../currencies';
+import { currencies, instrumentBasis } from '../currencies';
 import type { CurrencyCode } from '../currencies';
 import { Icon } from '@/components/ui/Icon';
 import { GlassCard } from '@/components/ui/GlassCard';
@@ -60,14 +60,20 @@ export function DollarCard({
       <details className="currency-details">
         <summary className="currency-row" title="جزئیات نرخ و منبع">
           <span className="currency-name">
-            <img
-              className="currency-flag"
-              src={`/flags/${code.toLowerCase()}.svg`}
-              width="20"
-              height="15"
-              alt=""
-              aria-hidden="true"
-            />
+            {code.startsWith('GOLD_') || code.startsWith('COIN_') ? (
+              <span className="metal-symbol">
+                <Icon name={code.startsWith('GOLD_') ? 'gold' : 'coin'} />
+              </span>
+            ) : (
+              <img
+                className="currency-flag"
+                src={`/flags/${code.toLowerCase()}.svg`}
+                width="20"
+                height="15"
+                alt=""
+                aria-hidden="true"
+              />
+            )}
             <span title={currency.name}>{currency.name}</span>
           </span>
           <span className="currency-price" aria-live="polite">
@@ -102,7 +108,7 @@ export function DollarCard({
           </span>
         </summary>
         <div className="currency-extra">
-          <p className="market-meta">واحد قیمت و مبلغ تغییر: تومان</p>
+          <p className="market-meta">واحد قیمت و مبلغ تغییر: تومان · {instrumentBasis(code)}</p>
           {stale && <p className="market-status--stale">دادهٔ قدیمی / تأییدنشده</p>}
           {quote && (
             <div className="market-meta">

@@ -32,3 +32,4 @@ coverage/
 
 server/**/bin/
 server/**/obj/
+server/**/App_Data/

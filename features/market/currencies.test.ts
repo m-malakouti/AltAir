@@ -68,3 +68,25 @@ describe('daily currency changes', () => {
     ).toThrow();
   });
 });
+
+describe('gold and coin instruments', () => {
+  it.each([
+    'GOLD_18',
+    'GOLD_MELTED',
+    'COIN_IMAMI',
+    'COIN_BAHAR',
+    'COIN_HALF',
+    'COIN_QUARTER',
+    'COIN_GRAM',
+  ])('preserves %s favorites and rates', (code) => {
+    expect(parseFavorites({ version: 1, codes: ['USD', code] })).toEqual(['USD', code]);
+    const parsed = parseDollarQuote(
+      {
+        ...quote,
+        rates: [{ code, priceToman: 15000000, changeToman: -25000, updatedAt: quote.updatedAt }],
+      },
+      now,
+    );
+    expect(parsed.rates?.[0]).toMatchObject({ code, priceToman: 15000000, changeToman: -25000 });
+  });
+});

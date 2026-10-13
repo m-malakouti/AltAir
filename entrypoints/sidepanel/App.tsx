@@ -1,4 +1,6 @@
+import { SketchWorkspace } from '@/components/SketchWorkspace';
 import { WorkspaceSegments } from '@/components/WorkspaceSegments';
+import { WebSearch } from '@/components/WebSearch';
 import { Icon } from '@/components/ui/Icon';
 import { useState } from 'react';
 import { WorkspaceShell } from '@/components/WorkspaceShell';
@@ -31,7 +33,10 @@ export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab
       </nav>
       {view === 'workspace' ? (
         <>
-          <WorkspaceSegments />
+          <>
+            {surface === 'newtab' ? <SketchWorkspace /> : <WebSearch />}
+            {surface !== 'newtab' && <WorkspaceSegments />}
+          </>
         </>
       ) : (
         <>

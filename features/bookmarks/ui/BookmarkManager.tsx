@@ -1,3 +1,5 @@
+import { useTopSites } from '../use-top-sites';
+import { selectTopSites } from '../top-sites';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Notice } from '@/components/ui/Notice';
@@ -34,6 +36,7 @@ function errorMessage(error: unknown): string {
   return 'خواندن یا ذخیرهٔ اطلاعات انجام نشد. دوباره تلاش کن.';
 }
 export function BookmarkManager() {
+  const frequent = useTopSites();
   const [data, setData] = useState<BookmarkData | null>(null);
   const [loadError, setLoadError] = useState('');
   const [error, setError] = useState('');
@@ -121,11 +124,15 @@ export function BookmarkManager() {
   }
   const unavailable = busy || !data || Boolean(loadError);
   const items = data ? searchBookmarks(data, query) : [];
+  const topItems =
+    data && frequent.enabled
+      ? selectTopSites(frequent.sites, data.bookmarks, frequent.hidden, query)
+      : [];
   return (
     <GlassCard className="bookmark-manager" aria-label="بوکمارک‌ها">
       <div className="bookmark-toolbar">
         <h3>بوکمارک‌ها</h3>
-        {Boolean(data?.bookmarks.length) && (
+        {(Boolean(data?.bookmarks.length) || frequent.enabled) && (
           <label className="bookmark-search">
             <Icon name="search" />
             <span className="sr-only">جست‌وجوی بوکمارک</span>
@@ -138,6 +145,68 @@ export function BookmarkManager() {
           </label>
         )}
       </div>
+      <details className="top-sites-settings">
+        <summary className="icon-button" aria-label="سایت‌های پرتکرار" title="سایت‌های پرتکرار">
+          <Icon name="frequent" />
+        </summary>
+        <div className="top-sites-options">
+          <p className="helper-text">
+            شش سایت پرتکرار مرورگر را پیش از بوکمارک‌ها نمایش بده. فهرست به سرور آلت ایر ارسال
+            نمی‌شود.
+          </p>
+          {!frequent.supported ? (
+            <p className="helper-text">این قابلیت فقط در افزونهٔ نصب‌شده در دسترس است.</p>
+          ) : (
+            <>
+              <button
+                className="icon-button"
+                disabled={frequent.busy}
+                aria-pressed={frequent.enabled}
+                aria-label={
+                  frequent.enabled ? 'غیرفعال‌کردن سایت‌های پرتکرار' : 'فعال‌کردن سایت‌های پرتکرار'
+                }
+                title={frequent.enabled ? 'غیرفعال‌کردن' : 'فعال‌کردن با اجازهٔ مرورگر'}
+                onClick={() => {
+                  void frequent.toggle();
+                }}
+              >
+                <Icon name={frequent.enabled ? 'close' : 'check'} />
+              </button>
+              {frequent.hidden.length > 0 && (
+                <button
+                  className="icon-button"
+                  disabled={frequent.busy}
+                  aria-label="بازگرداندن سایت‌های پنهان‌شده"
+                  title="بازگرداندن سایت‌های پنهان‌شده"
+                  onClick={() => {
+                    void frequent.changeHidden();
+                  }}
+                >
+                  <Icon name="refresh" />
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </details>
+      {frequent.error && (
+        <Notice>
+          {frequent.error}
+          <button
+            className="icon-button"
+            title="تلاش دوباره"
+            aria-label="تلاش دوباره برای سایت‌های پرتکرار"
+            onClick={() => {
+              void frequent.reload();
+            }}
+          >
+            <Icon name="refresh" />
+          </button>
+        </Notice>
+      )}
+      {frequent.enabled && !query && data && topItems.length === 0 && !frequent.error && (
+        <p className="helper-text">سایت پرتکرار تازه‌ای برای نمایش نیست.</p>
+      )}
       {loadError && (
         <div className="bookmark-load-error">
           <Notice>{loadError}</Notice>
@@ -258,6 +327,49 @@ export function BookmarkManager() {
         </div>
       )}
       <ul className="bookmark-list">
+        {topItems.map((item) => (
+          <li className="bookmark-tile bookmark-tile--frequent" key={'top:' + item.url}>
+            <a
+              className="bookmark-link"
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={item.title + '\n' + item.url}
+            >
+              <BookmarkPreview key={item.url} url={item.url} title={item.title} />
+              <strong>{item.title}</strong>
+              <span className="sr-only">پرتکرار؛ باز شدن در برگهٔ جدید</span>
+            </a>
+            <div className="bookmark-actions">
+              <button
+                className="icon-button"
+                disabled={unavailable}
+                title="ذخیره به‌عنوان بوکمارک دائمی"
+                aria-label={`ثابت‌کردن ${item.title}`}
+                onClick={() => {
+                  void run(
+                    () => repository.add({ title: item.title, url: item.url, categoryId: null }),
+                    'در بوکمارک‌های دائمی ذخیره شد.',
+                    () => {},
+                  );
+                }}
+              >
+                <Icon name="pin" />
+              </button>
+              <button
+                className="icon-button"
+                disabled={frequent.busy}
+                title="پنهان‌کردن"
+                aria-label={`پنهان‌کردن ${item.title}`}
+                onClick={() => {
+                  void frequent.changeHidden(item.url);
+                }}
+              >
+                <Icon name="close" />
+              </button>
+            </div>
+          </li>
+        ))}
         <li className="bookmark-add-cell">
           <button
             ref={addButton}
@@ -311,7 +423,9 @@ export function BookmarkManager() {
           </li>
         ))}
       </ul>
-      {data && query && items.length === 0 && <p className="helper-text">نتیجه‌ای پیدا نشد.</p>}
+      {data && query && items.length === 0 && topItems.length === 0 && (
+        <p className="helper-text">نتیجه‌ای پیدا نشد.</p>
+      )}
     </GlassCard>
   );
 }

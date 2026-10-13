@@ -38,7 +38,7 @@ export function refreshMarket(): Promise<void> {
           typeof cache === 'object' &&
           cache !== null &&
           'version' in cache &&
-          cache.version === 1 &&
+          cache.version === 2 &&
           'endpoint' in cache &&
           cache.endpoint === endpoint.href &&
           'quote' in cache
@@ -54,7 +54,7 @@ export function refreshMarket(): Promise<void> {
       const quote = await fetchDollarQuote(endpoint);
       publish({ status: 'ready', quote, error: null });
       try {
-        await saveMarketCache({ version: 1, endpoint: endpoint.href, quote });
+        await saveMarketCache({ version: 2, endpoint: endpoint.href, quote });
       } catch {
         publish({ status: 'ready', quote, error: 'قیمت دریافت شد، اما ذخیرهٔ آفلاین انجام نشد.' });
       }

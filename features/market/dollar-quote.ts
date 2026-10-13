@@ -1,4 +1,4 @@
-import { isCurrencyCode } from './currencies';
+import { currencies, isCurrencyCode } from './currencies';
 import type { CurrencyCode } from './currencies';
 export interface CurrencyRate {
   code: CurrencyCode;
@@ -43,7 +43,8 @@ export function parseDollarQuote(value: unknown, now = Date.now()): DollarQuote 
     throw new Error('Invalid market data.');
   let rates: CurrencyRate[] | undefined;
   if (data.rates !== undefined && data.rates !== null) {
-    if (!Array.isArray(data.rates) || data.rates.length > 9) throw new Error('Invalid rates.');
+    if (!Array.isArray(data.rates) || data.rates.length > currencies.length)
+      throw new Error('Invalid rates.');
     rates = data.rates.map((raw: unknown) => {
       if (typeof raw !== 'object' || raw === null) throw new Error('Invalid rate.');
       const rate = raw as Record<string, unknown>;

@@ -155,3 +155,26 @@ as a dash. A tooltip and expanded details specify toman and the comparison perio
 Prices use 23px text in approximately 48px collapsed rows. Old cached responses
 without changeToman remain compatible. A local live request confirmed daily
 changes for all nine supported currencies.
+
+## Gold and coin prices
+
+The market picker also supports GOLD_18 (18ayar, each gram of 18-karat gold),
+GOLD_MELTED (abshodeh, each mithqal), COIN_IMAMI (sekkeh), COIN_BAHAR (bahar),
+COIN_HALF (nim), COIN_QUARTER (rob), and COIN_GRAM (gerami). Provider keys and
+quantity bases follow https://www.navasan.net/en/api/webserviceguide/.
+
+On 2026-10-13 the subscription owner explicitly confirmed that coin and melted
+gold API fields are in thousand toman. These fields and their daily changes
+are multiplied by 1000 independently of the cash-currency PriceUnit setting.
+18-karat gram gold follows the configured verified price unit. No USD-priced
+ounce is included in this toman-only view. Per-gram, per-mithqal, and per-coin
+bases are displayed in expanded details. Daily percent still uses the previous
+price as its denominator. Optional missing prices are never fabricated.
+
+All sixteen instruments share one provider response and the existing polling
+budget. Favorites remain compatible. Market cache version is now 2 so older
+unnormalized metal values cannot be restored. New valid responses populate the
+cache. Live local response confirmed all seven metal prices after normalization;
+179 frontend tests and 42 backend tests passed. The picker was inspected in the
+browser. Reload the installed extension and use the market plus control to add
+any of these instruments.

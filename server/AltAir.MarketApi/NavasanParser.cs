@@ -13,7 +13,10 @@ public static class NavasanParser
         var rates = new List<CurrencyRate> { usd };
         var codes = new Dictionary<string, string> {
             ["eur"] = "EUR", ["gbp"] = "GBP", ["aed_sell"] = "AED", ["try"] = "TRY",
-            ["cad"] = "CAD", ["aud"] = "AUD", ["chf"] = "CHF", ["cny"] = "CNY"
+            ["cad"] = "CAD", ["aud"] = "AUD", ["chf"] = "CHF", ["cny"] = "CNY",
+            ["18ayar"] = "GOLD_18", ["abshodeh"] = "GOLD_MELTED",
+            ["sekkeh"] = "COIN_IMAMI", ["bahar"] = "COIN_BAHAR",
+            ["nim"] = "COIN_HALF", ["rob"] = "COIN_QUARTER", ["gerami"] = "COIN_GRAM"
         };
         foreach (var (key, code) in codes)
         {
@@ -32,7 +35,10 @@ public static class NavasanParser
         var value = item.GetProperty("value");
         var rawPrice = value.ValueKind == JsonValueKind.String
             ? decimal.Parse(value.GetString()!, CultureInfo.InvariantCulture) : value.GetDecimal();
-        var price = unit == "rial" ? rawPrice / 10m : rawPrice;
+        // Coin and melted-gold fields use thousand toman, verified with the subscription owner.
+        var multiplier = code.StartsWith("COIN_", StringComparison.Ordinal) || code == "GOLD_MELTED"
+            ? 1000m : unit == "rial" ? 0.1m : 1m;
+        var price = rawPrice * multiplier;
         var updated = DateTimeOffset.FromUnixTimeSeconds(item.GetProperty("timestamp").GetInt64());
         if (price <= 0 || price > 1_000_000_000_000m || updated < DateTimeOffset.UnixEpoch || updated > now.AddMinutes(5))
             throw new InvalidDataException("Invalid market data.");
@@ -43,7 +49,7 @@ public static class NavasanParser
                 ? changeElement.GetString() : changeElement.GetRawText(),
                 NumberStyles.Float, CultureInfo.InvariantCulture, out var rawChange))
         {
-            var converted = unit == "rial" ? rawChange / 10m : rawChange;
+            var converted = rawChange * multiplier;
             if (converted >= -1_000_000_000_000m && converted <= 1_000_000_000_000m && price - converted > 0)
                 change = converted;
         }

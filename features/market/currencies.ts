@@ -8,6 +8,13 @@ export const currencies = [
   { code: 'AUD', name: 'دلار استرالیا', symbol: 'A$' },
   { code: 'CHF', name: 'فرانک', symbol: 'CHF' },
   { code: 'CNY', name: 'یوان', symbol: '¥' },
+  { code: 'GOLD_18', name: 'طلای ۱۸ عیار', symbol: '18K' },
+  { code: 'GOLD_MELTED', name: 'طلای آب‌شده', symbol: 'Gold' },
+  { code: 'COIN_IMAMI', name: 'سکه امامی', symbol: 'Coin' },
+  { code: 'COIN_BAHAR', name: 'بهار آزادی', symbol: 'Coin' },
+  { code: 'COIN_HALF', name: 'نیم‌سکه', symbol: '½' },
+  { code: 'COIN_QUARTER', name: 'ربع‌سکه', symbol: '¼' },
+  { code: 'COIN_GRAM', name: 'سکه گرمی', symbol: '1g' },
 ] as const;
 export type CurrencyCode = (typeof currencies)[number]['code'];
 export function isCurrencyCode(value: unknown): value is CurrencyCode {
@@ -26,4 +33,11 @@ export function parseFavorites(value: unknown): CurrencyCode[] {
   )
     throw new Error('Invalid currency preferences.');
   return [...value.codes] as CurrencyCode[];
+}
+
+export function instrumentBasis(code: CurrencyCode): string {
+  if (code === 'GOLD_18') return 'هر گرم طلای ۱۸ عیار';
+  if (code === 'GOLD_MELTED') return 'هر مثقال طلای آب‌شده';
+  if (code.startsWith('COIN_')) return 'هر قطعه سکه';
+  return 'هر واحد ارز';
 }

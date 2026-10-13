@@ -13,7 +13,7 @@ import {
   holidayFor,
 } from '../calendar-model';
 
-export function CalendarHero() {
+export function CalendarHero({ variant = 'full' }: { variant?: 'full' | 'date' | 'month' }) {
   const [now, setNow] = useState(() => new Date());
   const today = persianDay(now);
   const [view, setView] = useState<{ year: number; month: number } | null>(null);
@@ -43,7 +43,7 @@ export function CalendarHero() {
     setSelected(1);
   }
   return (
-    <section className="calendar-hero" aria-label="تقویم شمسی">
+    <section className={`calendar-hero calendar-hero--${variant}`} aria-label="تقویم شمسی">
       <div className="calendar-intro">
         <span className="eyebrow">امروز، فرصتی تازه</span>
         <div className="hero-today">

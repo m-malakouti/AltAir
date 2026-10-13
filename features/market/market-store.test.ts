@@ -38,7 +38,7 @@ describe('market state', () => {
   });
   it('preserves cached quote timestamps when a refresh fails', async () => {
     dependencies.loadMarketCache.mockResolvedValue({
-      version: 1,
+      version: 2,
       endpoint: 'https://market.example.com/api/market/usd',
       quote,
     });
@@ -51,7 +51,7 @@ describe('market state', () => {
   });
   it('does not use a cache belonging to a different endpoint', async () => {
     dependencies.loadMarketCache.mockResolvedValue({
-      version: 1,
+      version: 2,
       endpoint: 'https://other.example.com',
       quote,
     });
