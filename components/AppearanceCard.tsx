@@ -1,4 +1,5 @@
 import { ThemeSelector } from './ThemeSelector';
+import { BackgroundSelector } from './BackgroundSelector';
 import { GlassCard } from './ui/GlassCard';
 
 export function AppearanceCard() {
@@ -14,6 +15,7 @@ export function AppearanceCard() {
         </span>
       </div>
       <ThemeSelector />
+      <BackgroundSelector />
       <p className="helper-text">انتخابت برای دفعهٔ بعد نگه داشته می‌شود.</p>
     </GlassCard>
   );

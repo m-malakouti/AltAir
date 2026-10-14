@@ -10,27 +10,31 @@ import { Button } from '@/components/ui/Button';
 export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab' }) {
   const [view, setView] = useState<'workspace' | 'appearance'>('workspace');
   return (
-    <WorkspaceShell surface={surface}>
-      <nav className="workspace-navigation" aria-label="بخش‌های فضای کار">
-        <Button
-          variant="ghost"
-          aria-label="فضای کار"
-          title="فضای کار"
-          aria-pressed={view === 'workspace'}
-          onClick={() => setView('workspace')}
-        >
-          <Icon name="grid" />
-        </Button>
-        <Button
-          variant="ghost"
-          aria-label="تنظیمات"
-          title="تنظیمات"
-          aria-pressed={view === 'appearance'}
-          onClick={() => setView('appearance')}
-        >
-          <Icon name="settings" />
-        </Button>
-      </nav>
+    <WorkspaceShell
+      surface={surface}
+      navigation={
+        <nav className="workspace-navigation" aria-label="بخش‌های فضای کار">
+          <Button
+            variant="ghost"
+            aria-label="فضای کار"
+            title="فضای کار"
+            aria-pressed={view === 'workspace'}
+            onClick={() => setView('workspace')}
+          >
+            <Icon name="grid" />
+          </Button>
+          <Button
+            variant="ghost"
+            aria-label="تنظیمات"
+            title="تنظیمات"
+            aria-pressed={view === 'appearance'}
+            onClick={() => setView('appearance')}
+          >
+            <Icon name="settings" />
+          </Button>
+        </nav>
+      }
+    >
       {view === 'workspace' ? (
         <>
           <>

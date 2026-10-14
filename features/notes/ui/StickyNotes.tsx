@@ -1,10 +1,18 @@
 import { Icon } from '@/components/ui/Icon';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { NOTES_KEY, readNotes, saveNote, deleteNote } from '../notes-store';
 import type { Note } from '../notes-store';
 import { watchWorkspaceValue } from '@/lib/browser/workspace-storage';
 
-function NoteCard({ note, remove }: { note: Note; remove: () => void }) {
+function NoteCard({
+  note,
+  remove,
+  addControl,
+}: {
+  note: Note;
+  remove: () => void;
+  addControl?: ReactNode;
+}) {
   const [draft, setDraft] = useState(note);
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -23,7 +31,8 @@ function NoteCard({ note, remove }: { note: Note; remove: () => void }) {
     }
   }
   return (
-    <article className={`sticky-note sticky-note--${shown.color}`}>
+    <article className="sticky-note">
+      {addControl}
       <textarea
         aria-label="متن یادداشت"
         placeholder="ایده‌ای برای امروز…"
@@ -37,25 +46,6 @@ function NoteCard({ note, remove }: { note: Note; remove: () => void }) {
         }}
       />
       <div className="note-tools">
-        <div className="note-colors" role="group" aria-label="رنگ یادداشت">
-          {(['yellow', 'pink', 'blue'] as const).map((color) => (
-            <button
-              key={color}
-              className={`note-color note-color--${color}`}
-              disabled={busy}
-              aria-label={`رنگ ${color === 'yellow' ? 'زرد' : color === 'pink' ? 'صورتی' : 'آبی'}`}
-              title={color === 'yellow' ? 'زرد' : color === 'pink' ? 'صورتی' : 'آبی'}
-              aria-pressed={shown.color === color}
-              onClick={() => {
-                setDraft({ ...shown, color });
-                setEditing(true);
-                setStatus('تغییرات ذخیره نشده');
-              }}
-            >
-              {shown.color === color && <Icon name="check" />}
-            </button>
-          ))}
-        </div>
         <button
           className="icon-button"
           aria-label="ذخیره یادداشت"
@@ -122,28 +112,34 @@ export function StickyNotes() {
       setBusy(false);
     }
   }
+  const addControl = (
+    <button
+      className="icon-button note-add"
+      aria-label="یادداشت جدید"
+      title="یادداشت جدید"
+      disabled={!ready || busy || notes.length >= 100}
+      onClick={() => {
+        void mutate(() => saveNote({ id: crypto.randomUUID(), text: '', color: 'yellow' }, true));
+      }}
+    >
+      <Icon name="plus" />
+    </button>
+  );
   return (
     <div className="notes-board">
-      <button
-        className="icon-button"
-        aria-label="یادداشت جدید"
-        title="یادداشت جدید"
-        disabled={!ready || busy || notes.length >= 100}
-        onClick={() => {
-          void mutate(() => saveNote({ id: crypto.randomUUID(), text: '', color: 'yellow' }, true));
-        }}
-      >
-        <Icon name="plus" />
-      </button>
       {error && <p role="status">{error}</p>}
-      {ready && notes.length === 0 && (
-        <p className="helper-text">فکرها، کارها و یادآوری‌هایت را اینجا بنویس.</p>
-      )}
       <div className="notes-grid">
-        {notes.map((note) => (
+        {notes.length === 0 && (
+          <div className="sticky-note note-empty">
+            {addControl}
+            <p className="helper-text">فکرها، کارها و یادآوری‌هایت را اینجا بنویس.</p>
+          </div>
+        )}
+        {notes.map((note, index) => (
           <NoteCard
             key={note.id}
             note={note}
+            addControl={index === 0 ? addControl : undefined}
             remove={() => {
               void mutate(() => deleteNote(note.id));
             }}

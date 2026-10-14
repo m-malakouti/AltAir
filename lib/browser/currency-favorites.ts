@@ -1,5 +1,5 @@
 import { browser } from 'wxt/browser';
-import { parseFavorites } from '@/features/market/currencies';
+import { moveCurrency, parseFavorites } from '@/features/market/currencies';
 import type { CurrencyCode } from '@/features/market/currencies';
 const KEY = 'altAir.market.favorites';
 function extension() {
@@ -37,4 +37,16 @@ export function watchFavorites(listener: () => void): () => void {
   };
   window.addEventListener('storage', onStorage);
   return () => window.removeEventListener('storage', onStorage);
+}
+export async function moveFavorite(
+  source: CurrencyCode,
+  target: CurrencyCode,
+): Promise<CurrencyCode[]> {
+  return navigator.locks.request(KEY, async () => {
+    const codes = moveCurrency(await readFavorites(), source, target);
+    const value = { version: 1, codes };
+    if (extension()) await browser.storage.local.set({ [KEY]: value });
+    else localStorage.setItem(KEY, JSON.stringify(value));
+    return codes;
+  });
 }

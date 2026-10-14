@@ -5,18 +5,23 @@ import { useTheme } from '@/features/appearance/use-theme';
 import { BrandHeader } from './BrandHeader';
 import { Notice } from './ui/Notice';
 import { Button } from './ui/Button';
+import { initializeBackground } from '@/features/appearance/background-store';
+
+initializeBackground();
 
 export function WorkspaceShell({
   children,
   surface,
+  navigation,
 }: {
   children: ReactNode;
   surface: 'popup' | 'panel' | 'newtab';
+  navigation?: ReactNode;
 }) {
   const { error, mode, setMode } = useTheme();
   return (
     <div className={`workspace workspace--${surface}`}>
-      <BrandHeader />
+      <BrandHeader navigation={navigation} compact={surface === 'newtab'} />
       <main className="workspace-content">
         {surface !== 'newtab' && <AccountCard />}
         {children}

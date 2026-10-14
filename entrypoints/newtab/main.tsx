@@ -1,3 +1,4 @@
+import { NewTabReady } from './ready';
 import { initializeTheme } from '@/features/appearance/theme-store';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -7,5 +8,6 @@ initializeTheme();
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App surface="newtab" />
+    <NewTabReady />
   </React.StrictMode>,
 );

@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { parseFavorites } from './currencies';
+import { moveCurrency, parseFavorites } from './currencies';
 import { parseDollarQuote } from './dollar-quote';
 describe('currency selection', () => {
+  it('moves up and down without mutating or dropping other currencies', () => {
+    const codes = parseFavorites({ version: 1, codes: ['USD', 'EUR', 'GOLD_18'] });
+    expect(moveCurrency(codes, 'USD', 'GOLD_18')).toEqual(['EUR', 'GOLD_18', 'USD']);
+    expect(moveCurrency(codes, 'GOLD_18', 'USD')).toEqual(['GOLD_18', 'USD', 'EUR']);
+    expect(moveCurrency(codes, 'GBP', 'USD')).toEqual(codes);
+    expect(moveCurrency(codes, 'USD', 'USD')).toEqual(codes);
+    expect(codes).toEqual(['USD', 'EUR', 'GOLD_18']);
+  });
   it('defaults to USD and preserves an intentionally empty selection', () => {
     expect(parseFavorites(undefined)).toEqual(['USD']);
     expect(parseFavorites({ version: 1, codes: [] })).toEqual([]);

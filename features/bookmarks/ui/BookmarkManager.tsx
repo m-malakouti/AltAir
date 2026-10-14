@@ -45,7 +45,29 @@ export function BookmarkManager() {
   const busyRef = useRef(false);
   const alive = useRef(false);
   const revision = useRef(0);
-  const [query, setQuery] = useState('');
+  const query = '';
+  const [contextId, setContextId] = useState<string | null>(null);
+  useEffect(() => {
+    const close = (event: PointerEvent) => {
+      if (!(event.target instanceof Element) || !event.target.closest('.bookmark-actions'))
+        setContextId(null);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setContextId(null);
+    };
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', escape);
+    return () => {
+      document.removeEventListener('pointerdown', close);
+      document.removeEventListener('keydown', escape);
+    };
+  }, []);
+  useEffect(() => {
+    if (contextId)
+      document
+        .querySelector<HTMLButtonElement>('.bookmark-tile.is-context-open .bookmark-actions button')
+        ?.focus();
+  }, [contextId]);
   const [editor, setEditor] = useState<'new' | Bookmark | null>(null);
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
@@ -130,65 +152,6 @@ export function BookmarkManager() {
       : [];
   return (
     <GlassCard className="bookmark-manager" aria-label="بوکمارک‌ها">
-      <div className="bookmark-toolbar">
-        <h3>بوکمارک‌ها</h3>
-        {(Boolean(data?.bookmarks.length) || frequent.enabled) && (
-          <label className="bookmark-search">
-            <Icon name="search" />
-            <span className="sr-only">جست‌وجوی بوکمارک</span>
-            <input
-              type="search"
-              placeholder="جست‌وجو…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </label>
-        )}
-      </div>
-      <details className="top-sites-settings">
-        <summary className="icon-button" aria-label="سایت‌های پرتکرار" title="سایت‌های پرتکرار">
-          <Icon name="frequent" />
-        </summary>
-        <div className="top-sites-options">
-          <p className="helper-text">
-            شش سایت پرتکرار مرورگر را پیش از بوکمارک‌ها نمایش بده. فهرست به سرور آلت ایر ارسال
-            نمی‌شود.
-          </p>
-          {!frequent.supported ? (
-            <p className="helper-text">این قابلیت فقط در افزونهٔ نصب‌شده در دسترس است.</p>
-          ) : (
-            <>
-              <button
-                className="icon-button"
-                disabled={frequent.busy}
-                aria-pressed={frequent.enabled}
-                aria-label={
-                  frequent.enabled ? 'غیرفعال‌کردن سایت‌های پرتکرار' : 'فعال‌کردن سایت‌های پرتکرار'
-                }
-                title={frequent.enabled ? 'غیرفعال‌کردن' : 'فعال‌کردن با اجازهٔ مرورگر'}
-                onClick={() => {
-                  void frequent.toggle();
-                }}
-              >
-                <Icon name={frequent.enabled ? 'close' : 'check'} />
-              </button>
-              {frequent.hidden.length > 0 && (
-                <button
-                  className="icon-button"
-                  disabled={frequent.busy}
-                  aria-label="بازگرداندن سایت‌های پنهان‌شده"
-                  title="بازگرداندن سایت‌های پنهان‌شده"
-                  onClick={() => {
-                    void frequent.changeHidden();
-                  }}
-                >
-                  <Icon name="refresh" />
-                </button>
-              )}
-            </>
-          )}
-        </div>
-      </details>
       {frequent.error && (
         <Notice>
           {frequent.error}
@@ -328,7 +291,20 @@ export function BookmarkManager() {
       )}
       <ul className="bookmark-list">
         {topItems.map((item) => (
-          <li className="bookmark-tile bookmark-tile--frequent" key={'top:' + item.url}>
+          <li
+            className={`bookmark-tile bookmark-tile--frequent ${contextId === item.url ? 'is-context-open' : ''}`}
+            key={'top:' + item.url}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              setContextId(item.url);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+                event.preventDefault();
+                setContextId(item.url);
+              }
+            }}
+          >
             <a
               className="bookmark-link"
               href={item.url}
@@ -384,7 +360,20 @@ export function BookmarkManager() {
           </button>
         </li>
         {items.map((item) => (
-          <li key={item.id} className="bookmark-tile">
+          <li
+            key={item.id}
+            className={`bookmark-tile ${contextId === item.id ? 'is-context-open' : ''}`}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              setContextId(item.id);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+                event.preventDefault();
+                setContextId(item.id);
+              }
+            }}
+          >
             <a
               className="bookmark-link"
               href={item.url}
@@ -402,7 +391,10 @@ export function BookmarkManager() {
                 disabled={unavailable}
                 aria-label={`ویرایش ${item.title}`}
                 title="ویرایش"
-                onClick={() => openEditor(item)}
+                onClick={() => {
+                  setContextId(null);
+                  openEditor(item);
+                }}
               >
                 <Icon name="edit" />
               </button>
@@ -412,6 +404,7 @@ export function BookmarkManager() {
                 aria-label={`حذف ${item.title}`}
                 title="حذف"
                 onClick={() => {
+                  setContextId(null);
                   setEditor(null);
                   setDeleting(item);
                   setError('');

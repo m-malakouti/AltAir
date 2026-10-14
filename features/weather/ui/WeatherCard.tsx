@@ -230,10 +230,7 @@ export function WeatherCard() {
       )}
       {weather && (
         <div className="hourly-forecast">
-          <h3>پیش‌بینی ۲۴ ساعت آینده</h3>
-          <p className="helper-text">
-            ساعت محلی شهر انتخاب‌شده{stale ? ' · دادهٔ قدیمی / تأییدنشده' : ''}
-          </p>
+          <h3 className="sr-only">پیش‌بینی ۲۴ ساعت آینده به وقت شهر انتخاب‌شده</h3>
           {weather.hourly?.some((hour) => Date.parse(hour.time) > now) ? (
             <div
               className="hourly-strip"
@@ -246,11 +243,14 @@ export function WeatherCard() {
                 .map((hour) => {
                   const description = weatherDescription(hour.code, hour.isDay);
                   return (
-                    <div className="hourly-item" key={hour.time}>
+                    <div
+                      className="hourly-item"
+                      key={hour.time}
+                      title={`${new Date(hour.time).toLocaleString('fa-IR', { timeZone: weather.timezone ?? 'UTC' })} · ${description.text} · احتمال بارش ${hour.precipitationProbability === null ? 'نامشخص' : `${hour.precipitationProbability}٪`}`}
+                    >
                       <time dateTime={hour.time}>
                         {new Date(hour.time).toLocaleString('fa-IR', {
                           timeZone: weather.timezone ?? 'UTC',
-                          weekday: 'short',
                           hour: '2-digit',
                           minute: '2-digit',
                           hour12: false,
@@ -259,14 +259,7 @@ export function WeatherCard() {
                       <span className="weather-condition" aria-label={description.text}>
                         {description.symbol}
                       </span>
-                      <strong dir="ltr">{Math.round(hour.temperature)}°C</strong>
-                      <span>{description.text}</span>
-                      <small>
-                        بارش{' '}
-                        {hour.precipitationProbability === null
-                          ? '—'
-                          : `${hour.precipitationProbability}٪`}
-                      </small>
+                      <strong dir="ltr">{Math.round(hour.temperature)}°</strong>
                     </div>
                   );
                 })}

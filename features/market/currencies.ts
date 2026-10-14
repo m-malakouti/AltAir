@@ -17,6 +17,20 @@ export const currencies = [
   { code: 'COIN_GRAM', name: 'سکه گرمی', symbol: '1g' },
 ] as const;
 export type CurrencyCode = (typeof currencies)[number]['code'];
+export const currencyGroup = (code: CurrencyCode) =>
+  code.startsWith('GOLD_') || code.startsWith('COIN_') ? 'metals' : 'fiat';
+export function moveCurrency(
+  codes: CurrencyCode[],
+  source: CurrencyCode,
+  target: CurrencyCode,
+): CurrencyCode[] {
+  const from = codes.indexOf(source);
+  const to = codes.indexOf(target);
+  if (from < 0 || to < 0 || from === to) return [...codes];
+  const next = codes.filter((code) => code !== source);
+  next.splice(to, 0, source);
+  return next;
+}
 export function isCurrencyCode(value: unknown): value is CurrencyCode {
   return currencies.some((currency) => currency.code === value);
 }

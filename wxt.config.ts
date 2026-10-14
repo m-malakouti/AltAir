@@ -15,7 +15,12 @@ export default defineConfig({
       action: { default_icon: { 16: 'icon/16.png', 32: 'icon/32.png', 48: 'icon/48.png' } },
       permissions: ['storage'],
       optional_permissions: ['topSites'],
-      ...(endpoint ? { host_permissions: [`${endpoint.protocol}//${endpoint.host}/*`] } : {}),
+      host_permissions: [
+        'https://www.google.com/*',
+        'https://site.api.espn.com/*',
+        'https://api.coinbase.com/*',
+        ...(endpoint ? [`${endpoint.protocol}//${endpoint.host}/*`] : []),
+      ],
     };
   },
 });
