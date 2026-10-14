@@ -3593,3 +3593,333 @@ body,
 .crypto-source a {
   color: inherit;
 }
+
+/* Compact quote tables share a fixed column layout across every market segment. */
+.market-segment {
+  gap: 0;
+}
+.market-table-head,
+.market-table-entry .currency-row,
+.market-table-crypto {
+  direction: rtl;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.1fr) minmax(0, 0.8fr) minmax(0, 0.7fr);
+  column-gap: 6px;
+  align-items: center;
+}
+.market-table-head {
+  color: var(--color-muted);
+  padding: 5px 8px;
+  font-size: 10px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: right;
+}
+.market-table-head > :not(:first-child) {
+  text-align: right;
+}
+.currency-board .market-table-entry.currency-strip {
+  padding: 0 8px;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.market-table-entry .currency-row {
+  min-height: 32px;
+  font-size: 11px;
+}
+.market-table-entry .currency-name {
+  font-size: 10px;
+  gap: 4px;
+  overflow: hidden;
+}
+.market-table-entry .currency-name > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.market-table-entry .currency-price {
+  display: contents;
+}
+.market-table-entry .currency-price strong {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  grid-column: 2;
+}
+.market-table-entry .currency-change {
+  font-size: 10px;
+  text-align: right;
+  grid-column: 3;
+  white-space: nowrap;
+}
+.market-table-entry .market-percent {
+  font-size: 10px;
+  text-align: right;
+  grid-column: 4;
+}
+.market-table-entry .currency-indicator {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 8px;
+  font-size: 9px;
+}
+.market-table-entry .currency-details {
+  position: relative;
+}
+.market-table-entry .currency-unavailable {
+  grid-column: 2;
+  text-align: right;
+}
+.market-table-entry .currency-name img {
+  width: 15px;
+  height: 12px;
+}
+.market-table-entry .metal-symbol svg {
+  width: 14px;
+  height: 14px;
+}
+.currency-sort-row:hover,
+.market-table-crypto:hover {
+  background: var(--color-surface-soft);
+}
+.currency-sort-row {
+  border-radius: 0;
+}
+.currency-drag-handle {
+  inset-inline-end: auto;
+  left: -14px;
+  width: 14px;
+}
+.market-table-crypto {
+  padding: 0 8px;
+  min-height: 32px;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  font-size: 10px;
+}
+.market-table-crypto > :not(:first-child) {
+  text-align: right;
+}
+.market-table-crypto strong {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.crypto-table-symbol {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.crypto-table-symbol .crypto-coin-symbol {
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  background: var(--color-surface-soft);
+}
+.market-table-crypto span {
+  font-variant-numeric: tabular-nums;
+}
+.market-segment .crypto-source {
+  padding-top: 8px;
+}
+.market-table-entry .market-change-unavailable {
+  grid-column: 3;
+  font-size: 10px;
+  text-align: right;
+}
+
+/* Section dividers: a single shared header followed by titled separator lines. */
+.market-segment + .market-segment {
+  margin-top: 6px;
+  padding-top: 0;
+  border-top: 0;
+}
+.market-segment-title {
+  direction: rtl;
+  padding: 10px 8px 7px;
+  gap: 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.market-segment-title::after {
+  content: '';
+  flex: 1;
+  min-width: 12px;
+  height: 1px;
+  background: var(--color-border);
+  order: 1;
+}
+.market-segment-title small {
+  order: 2;
+  margin-inline-start: 0;
+  font-size: 9px;
+}
+.market-segment-title > button {
+  order: 3;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+}
+.market-table-entry .currency-name,
+.crypto-table-symbol {
+  direction: rtl;
+  justify-content: flex-start;
+}
+.market-table-entry .currency-indicator:not(.currency-indicator--stale) {
+  visibility: hidden;
+}
+
+/* Date belongs beneath the analog clock; weather occupies its own full-height card. */
+.sketch-clock-stack {
+  grid-area: clock;
+  display: grid;
+  grid-template-rows: auto minmax(var(--today-card-height), 1fr);
+  align-self: stretch;
+  gap: 12px;
+  min-width: 0;
+}
+.sketch-clock-stack > .sketch-clock {
+  grid-area: auto;
+  grid-row: 1;
+  min-height: 0;
+}
+.sketch-clock-stack > .sketch-date {
+  grid-area: auto;
+  grid-row: 2;
+  min-height: var(--today-card-height);
+}
+.sketch-clock-stack .hero-today {
+  grid-row: span 2;
+}
+.sketch-clock-stack .hero-gregorian {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  text-align: left;
+  font-size: 11px;
+}
+.sketch-clock-stack .hero-occasion {
+  grid-column: 2;
+  grid-row: 2;
+  font-size: 10px;
+  color: var(--color-muted);
+  text-align: left;
+  margin: 0;
+}
+.sketch-notes {
+  grid-area: notes;
+}
+.sketch-weather {
+  grid-area: weather;
+  min-height: var(--top-card-height);
+}
+.sketch-weather .weather-card {
+  padding: 12px;
+}
+.sketch-weather .hourly-forecast {
+  padding-block: 14px 0;
+}
+.sketch-weather .hourly-item {
+  flex-basis: calc((100% - 12px) / 4);
+  padding: 16px 2px;
+  gap: 12px;
+}
+.sketch-workspace {
+  grid-template-areas: 'clock center center center right' 'left notes month weather right' 'left bottom bottom bottom right';
+}
+.market-segment-title > .market-add {
+  order: 0;
+}
+.sketch-market .market-inline-picker {
+  padding: 0 8px 8px;
+  border: 0;
+}
+.market-inline-picker fieldset {
+  margin-top: 0;
+}
+@media (max-width: 1150px) {
+  .sketch-workspace {
+    grid-template-areas: 'clock center center center' 'left notes month weather' 'left bottom bottom bottom' 'left right right right';
+  }
+}
+@media (max-width: 760px) {
+  .sketch-workspace {
+    grid-template-areas: 'center center' 'clock notes' 'month weather' 'bottom bottom' 'right right' 'left left';
+  }
+}
+@media (max-width: 440px) {
+  .sketch-workspace {
+    grid-template-areas: 'center center' 'clock clock' 'notes notes' 'month month' 'weather weather' 'bottom bottom' 'right right' 'left left';
+  }
+}
+
+/* Trim the common bottom reserve while retaining space for the calendar controls. */
+.sketch-workspace {
+  --top-card-height: 260px;
+  --today-card-height: 95px;
+}
+.sketch-month .calendar-hero {
+  padding: 4px 8px;
+}
+.sketch-month .calendar-date {
+  height: 22px;
+  min-height: 22px;
+}
+.sketch-month .calendar-source > summary {
+  height: 24px;
+  min-height: 24px;
+  width: 24px;
+}
+.sketch-weather .hourly-item {
+  padding-block: 12px;
+  gap: 10px;
+}
+.sketch-clock-stack > .sketch-date {
+  display: flex;
+  align-items: center;
+}
+.sketch-clock-stack > .sketch-date .calendar-hero {
+  width: 100%;
+}
+.sketch-clock-stack .sketch-date .calendar-hero {
+  padding-block: 5px;
+}
+.sketch-clock-stack > .sketch-date {
+  min-height: 75px;
+}
+.sketch-clock-stack {
+  grid-template-rows: auto minmax(75px, 1fr);
+}
+.weather-day-header,
+.weather-day-range {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.weather-day-header {
+  font-size: 13px;
+}
+.weather-day-label {
+  color: var(--color-muted);
+  font-size: 11px;
+  margin-block: 4px 8px;
+}
+.weather-day-range {
+  font-size: 11px;
+}
+.weather-day-range strong {
+  display: inline-block;
+  font-size: 17px;
+  margin-inline-start: 4px;
+}
+.sketch-weather .weather-day-card .hourly-item {
+  padding-block: 6px;
+  gap: 6px;
+}

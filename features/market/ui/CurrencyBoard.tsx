@@ -17,6 +17,7 @@ export function CurrencyBoard() {
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [picker, setPicker] = useState<'fiat' | 'metals' | null>(null);
   const [dragging, setDragging] = useState<CurrencyCode | null>(null);
   const [over, setOver] = useState<CurrencyCode | null>(null);
   const [announcement, setAnnouncement] = useState('');
@@ -74,31 +75,16 @@ export function CurrencyBoard() {
   }
   return (
     <section className="currency-board" aria-label="نرخ‌های دلخواه">
-      <details className="currency-picker">
-        <summary className="icon-button" aria-label="افزودن یا حذف نرخ" title="افزودن یا حذف نرخ">
-          <Icon name="plus" />
-        </summary>
-        <fieldset disabled={!ready || busy}>
-          <legend>نرخ‌های دلخواه</legend>
-          {currencies.map((item) => (
-            <label key={item.code}>
-              <input
-                type="checkbox"
-                checked={selected.includes(item.code)}
-                onChange={(event) => {
-                  void change(item.code, event.target.checked);
-                }}
-              />
-              <span>{item.name}</span>
-              <small dir="ltr">{item.symbol}</small>
-            </label>
-          ))}
-        </fieldset>
-      </details>
       {error && <Notice>{error}</Notice>}
       <span className="sr-only" role="status">
         {announcement}
       </span>
+      <div className="market-table-head" aria-hidden="true">
+        <span>نماد</span>
+        <span>آخرین</span>
+        <span>تغییر</span>
+        <span>تغییر٪</span>
+      </div>
       {(['fiat', 'metals'] as const).map((group) => (
         <section
           className="market-segment"
@@ -107,8 +93,38 @@ export function CurrencyBoard() {
         >
           <h3 className="market-segment-title">
             {group === 'fiat' ? 'ارزها' : 'طلا و سکه'}
+            <button
+              className="icon-button market-add"
+              title={group === 'fiat' ? 'افزودن ارز' : 'افزودن طلا و سکه'}
+              aria-label={group === 'fiat' ? 'افزودن ارز' : 'افزودن طلا و سکه'}
+              aria-expanded={picker === group}
+              onClick={() => setPicker((current) => (current === group ? null : group))}
+            >
+              <Icon name={picker === group ? 'close' : 'plus'} />
+            </button>
             <small>تومان</small>
           </h3>
+          {picker === group && (
+            <div className="currency-picker market-inline-picker">
+              <fieldset disabled={!ready || busy}>
+                <legend>{group === 'fiat' ? 'ارزهای دلخواه' : 'طلا و سکهٔ دلخواه'}</legend>
+                {currencies
+                  .filter((item) => currencyGroup(item.code) === group)
+                  .map((item) => (
+                    <label key={item.code}>
+                      <input
+                        type="checkbox"
+                        checked={selected.includes(item.code)}
+                        onChange={(event) => {
+                          void change(item.code, event.target.checked);
+                        }}
+                      />
+                      <span>{item.name}</span>
+                    </label>
+                  ))}
+              </fieldset>
+            </div>
+          )}
           {!selected.some((code) => currencyGroup(code) === group) && (
             <p className="helper-text">از دکمهٔ + موارد دلخواه را اضافه کن.</p>
           )}
@@ -161,7 +177,7 @@ export function CurrencyBoard() {
                 >
                   ⠿
                 </button>
-                <DollarCard code={code} />
+                <DollarCard code={code} table />
               </div>
             ))}
         </section>

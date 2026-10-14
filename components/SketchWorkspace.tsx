@@ -1,5 +1,5 @@
 import { AccountCard } from '@/features/auth/ui/AccountCard';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { CalendarHero } from '@/features/calendar/ui/CalendarHero';
 import { WeatherCard } from '@/features/weather/ui/WeatherCard';
 import { CurrencyBoard } from '@/features/market/ui/CurrencyBoard';
@@ -34,25 +34,40 @@ function Placeholder({ lines = 3 }: { lines?: number }) {
   );
 }
 export function SketchWorkspace() {
+  const [weatherDate, setWeatherDate] = useState<string | null>(null);
   return (
     <div className="sketch-workspace">
-      <Slot area="clock" title="ساعت">
-        <WorkspaceClock />
-      </Slot>
+      <div className="sketch-clock-stack">
+        <Slot area="clock" title="ساعت">
+          <WorkspaceClock />
+        </Slot>
+        <Slot area="date" title="امروز">
+          <CalendarHero variant="date" />
+        </Slot>
+      </div>
       <section className="sketch-notes" aria-label="یادداشت‌ها">
         <StickyNotes />
       </section>
       <Slot area="month" title="تقویم">
-        <CalendarHero variant="month" />
+        <CalendarHero
+          variant="month"
+          onSelectDate={(date) =>
+            setWeatherDate(
+              date
+                ? new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'Asia/Tehran',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                  }).format(date)
+                : null,
+            )
+          }
+        />
       </Slot>
-      <div className="sketch-today-stack">
-        <Slot area="date" title="امروز">
-          <CalendarHero variant="date" />
-        </Slot>
-        <Slot area="weather" title="آب‌وهوا">
-          <WeatherCard />
-        </Slot>
-      </div>
+      <Slot area="weather" title="آب‌وهوا">
+        <WeatherCard selectedDate={weatherDate} />
+      </Slot>
       <aside className="sketch-right">
         <Slot area="account" title="حساب کاربری">
           <AccountCard />

@@ -12,8 +12,9 @@ import {
 import { parseCity, parseWeather, weatherDescription } from '../weather-model';
 import type { WeatherCity, WeatherNow } from '../weather-model';
 import { searchCities, fetchWeather, weatherConfigured } from '../weather-client';
+import { WeatherDateCard } from './WeatherDateCard';
 
-export function WeatherCard() {
+export function WeatherCard({ selectedDate = null }: { selectedDate?: string | null }) {
   const [city, setCity] = useState<WeatherCity | null>(null);
   const [ready, setReady] = useState(false);
   const [choosing, setChoosing] = useState(false);
@@ -70,7 +71,7 @@ export function WeatherCard() {
     return () => window.clearInterval(timer);
   }, []);
   useEffect(() => {
-    if (!city) return;
+    if (!city || selectedDate) return;
     const controller = new AbortController();
     const activeCity = city;
     async function load() {
@@ -122,7 +123,7 @@ export function WeatherCard() {
       if (!controller.signal.aborted) setLoading(false);
     });
     return () => controller.abort();
-  }, [city, key, tick]);
+  }, [city, key, tick, selectedDate]);
   async function search() {
     searchAbort.current?.abort();
     const controller = new AbortController();
@@ -168,106 +169,114 @@ export function WeatherCard() {
   const condition = weather ? weatherDescription(weather.code, weather.isDay) : null;
   return (
     <GlassCard className="weather-card" aria-label="آب‌وهوا">
-      {!weatherConfigured && <p className="helper-text">سرویس آب‌وهوا هنوز تنظیم نشده است.</p>}
-      {city && (
-        <details>
-          <summary className="weather-row" title="جزئیات آب‌وهوا">
-            <span className="weather-city">{city.name}</span>
-            <span
-              className="weather-condition"
-              title={condition?.text}
-              aria-label={condition?.text}
-            >
-              {condition?.symbol ?? '◌'}
-            </span>
-            <strong dir="ltr">
-              {weather ? `${Math.round(weather.temperature)}°C` : loading ? '…' : '—'}
-            </strong>
-            <span
-              className={stale ? 'currency-indicator--stale' : ''}
-              title={stale ? 'دادهٔ قدیمی یا تأییدنشده' : 'جزئیات'}
-            >
-              {stale ? '!' : '⌄'}
-            </span>
-          </summary>
-          <div className="weather-extra">
-            {condition && (
-              <p>
-                {condition.text}
-                {stale ? ' · دادهٔ قدیمی / تأییدنشده' : ''}
-              </p>
-            )}
-            {weather && (
-              <time dateTime={weather.observedAt}>
-                {new Date(weather.observedAt).toLocaleString('fa-IR')}
-              </time>
-            )}
-            {weatherError && <p role="status">{weatherError}</p>}
-            <div className="weather-tools">
-              <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
-                Open-Meteo
-              </a>
-              <button
-                className="icon-button"
-                aria-label="تغییر شهر"
-                title="تغییر شهر"
-                onClick={() => setChoosing(true)}
-              >
-                <Icon name="edit" />
-              </button>
-              <button
-                className="icon-button"
-                disabled={loading}
-                aria-label="تازه‌سازی آب‌وهوا"
-                title="تازه‌سازی"
-                onClick={() => setTick((value) => value + 1)}
-              >
-                <Icon name="refresh" />
-              </button>
-            </div>
-          </div>
-        </details>
-      )}
-      {weather && (
-        <div className="hourly-forecast">
-          <h3 className="sr-only">پیش‌بینی ۲۴ ساعت آینده به وقت شهر انتخاب‌شده</h3>
-          {weather.hourly?.some((hour) => Date.parse(hour.time) > now) ? (
-            <div
-              className="hourly-strip"
-              tabIndex={0}
-              role="region"
-              aria-label="پیش‌بینی ساعتی؛ برای ساعت‌های بعد پیمایش کن"
-            >
-              {weather.hourly
-                .filter((hour) => Date.parse(hour.time) > now)
-                .map((hour) => {
-                  const description = weatherDescription(hour.code, hour.isDay);
-                  return (
-                    <div
-                      className="hourly-item"
-                      key={hour.time}
-                      title={`${new Date(hour.time).toLocaleString('fa-IR', { timeZone: weather.timezone ?? 'UTC' })} · ${description.text} · احتمال بارش ${hour.precipitationProbability === null ? 'نامشخص' : `${hour.precipitationProbability}٪`}`}
-                    >
-                      <time dateTime={hour.time}>
-                        {new Date(hour.time).toLocaleString('fa-IR', {
-                          timeZone: weather.timezone ?? 'UTC',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          hour12: false,
-                        })}
-                      </time>
-                      <span className="weather-condition" aria-label={description.text}>
-                        {description.symbol}
-                      </span>
-                      <strong dir="ltr">{Math.round(hour.temperature)}°</strong>
-                    </div>
-                  );
-                })}
-            </div>
-          ) : (
-            <p className="helper-text">پیش‌بینی ساعتی در دسترس نیست؛ آب‌وهوا را تازه‌سازی کن.</p>
+      {selectedDate && city ? (
+        <WeatherDateCard city={city} date={selectedDate} onChangeCity={() => setChoosing(true)} />
+      ) : (
+        <>
+          {!weatherConfigured && <p className="helper-text">سرویس آب‌وهوا هنوز تنظیم نشده است.</p>}
+          {city && (
+            <details>
+              <summary className="weather-row" title="جزئیات آب‌وهوا">
+                <span className="weather-city">{city.name}</span>
+                <span
+                  className="weather-condition"
+                  title={condition?.text}
+                  aria-label={condition?.text}
+                >
+                  {condition?.symbol ?? '◌'}
+                </span>
+                <strong dir="ltr">
+                  {weather ? `${Math.round(weather.temperature)}°C` : loading ? '…' : '—'}
+                </strong>
+                <span
+                  className={stale ? 'currency-indicator--stale' : ''}
+                  title={stale ? 'دادهٔ قدیمی یا تأییدنشده' : 'جزئیات'}
+                >
+                  {stale ? '!' : '⌄'}
+                </span>
+              </summary>
+              <div className="weather-extra">
+                {condition && (
+                  <p>
+                    {condition.text}
+                    {stale ? ' · دادهٔ قدیمی / تأییدنشده' : ''}
+                  </p>
+                )}
+                {weather && (
+                  <time dateTime={weather.observedAt}>
+                    {new Date(weather.observedAt).toLocaleString('fa-IR')}
+                  </time>
+                )}
+                {weatherError && <p role="status">{weatherError}</p>}
+                <div className="weather-tools">
+                  <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
+                    Open-Meteo
+                  </a>
+                  <button
+                    className="icon-button"
+                    aria-label="تغییر شهر"
+                    title="تغییر شهر"
+                    onClick={() => setChoosing(true)}
+                  >
+                    <Icon name="edit" />
+                  </button>
+                  <button
+                    className="icon-button"
+                    disabled={loading}
+                    aria-label="تازه‌سازی آب‌وهوا"
+                    title="تازه‌سازی"
+                    onClick={() => setTick((value) => value + 1)}
+                  >
+                    <Icon name="refresh" />
+                  </button>
+                </div>
+              </div>
+            </details>
           )}
-        </div>
+          {weather && (
+            <div className="hourly-forecast">
+              <h3 className="sr-only">پیش‌بینی ۲۴ ساعت آینده به وقت شهر انتخاب‌شده</h3>
+              {weather.hourly?.some((hour) => Date.parse(hour.time) > now) ? (
+                <div
+                  className="hourly-strip"
+                  tabIndex={0}
+                  role="region"
+                  aria-label="پیش‌بینی ساعتی؛ برای ساعت‌های بعد پیمایش کن"
+                >
+                  {weather.hourly
+                    .filter((hour) => Date.parse(hour.time) > now)
+                    .map((hour) => {
+                      const description = weatherDescription(hour.code, hour.isDay);
+                      return (
+                        <div
+                          className="hourly-item"
+                          key={hour.time}
+                          title={`${new Date(hour.time).toLocaleString('fa-IR', { timeZone: weather.timezone ?? 'UTC' })} · ${description.text} · احتمال بارش ${hour.precipitationProbability === null ? 'نامشخص' : `${hour.precipitationProbability}٪`}`}
+                        >
+                          <time dateTime={hour.time}>
+                            {new Date(hour.time).toLocaleString('fa-IR', {
+                              timeZone: weather.timezone ?? 'UTC',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: false,
+                            })}
+                          </time>
+                          <span className="weather-condition" aria-label={description.text}>
+                            {description.symbol}
+                          </span>
+                          <strong dir="ltr">{Math.round(hour.temperature)}°</strong>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <p className="helper-text">
+                  پیش‌بینی ساعتی در دسترس نیست؛ آب‌وهوا را تازه‌سازی کن.
+                </p>
+              )}
+            </div>
+          )}
+        </>
       )}
       {ready && (!city || choosing) && (
         <div className="weather-picker">

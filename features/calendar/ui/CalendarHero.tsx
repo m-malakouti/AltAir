@@ -13,7 +13,13 @@ import {
   holidayFor,
 } from '../calendar-model';
 
-export function CalendarHero({ variant = 'full' }: { variant?: 'full' | 'date' | 'month' }) {
+export function CalendarHero({
+  variant = 'full',
+  onSelectDate,
+}: {
+  variant?: 'full' | 'date' | 'month';
+  onSelectDate?: (date: Date | null) => void;
+}) {
   const [now, setNow] = useState(() => new Date());
   const today = persianDay(now);
   const [view, setView] = useState<{ year: number; month: number } | null>(null);
@@ -39,8 +45,11 @@ export function CalendarHero({ variant = 'full' }: { variant?: 'full' | 'date' |
   }).format(now);
   const verified = active.year === VERIFIED_YEAR;
   function move(delta: number) {
-    setView(shiftMonth(active.year, active.month, delta));
+    const next = shiftMonth(active.year, active.month, delta);
+    setView(next);
     setSelected(1);
+    const day = monthDays(next.year, next.month)[0];
+    if (day) onSelectDate?.(day.date);
   }
   return (
     <section className={`calendar-hero calendar-hero--${variant}`} aria-label="تقویم شمسی">
@@ -55,15 +64,17 @@ export function CalendarHero({ variant = 'full' }: { variant?: 'full' | 'date' |
             <p>{weekday}</p>
           </div>
         </div>
-        <time className="hero-clock" dateTime={now.toISOString()}>
-          {now.toLocaleTimeString('fa-IR', {
-            timeZone: 'Asia/Tehran',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-          })}
-        </time>
-        <span className="helper-text">به وقت تهران</span>
+        {variant !== 'date' && (
+          <time className="hero-clock" dateTime={now.toISOString()}>
+            {now.toLocaleTimeString('fa-IR', {
+              timeZone: 'Asia/Tehran',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            })}
+          </time>
+        )}
+        {variant !== 'date' && <span className="helper-text">به وقت تهران</span>}
         <p className="hero-gregorian" dir="ltr">
           {now.toLocaleDateString('en-GB', {
             timeZone: 'Asia/Tehran',
@@ -72,7 +83,15 @@ export function CalendarHero({ variant = 'full' }: { variant?: 'full' | 'date' |
             year: 'numeric',
           })}
         </p>
-        {holidayFor(today) && (
+        {variant === 'date' && (
+          <p className="hero-occasion">
+            {holidayFor(today) ??
+              (today.year === VERIFIED_YEAR
+                ? 'مناسبتی در تقویم ثبت نشده'
+                : 'مناسبت‌های این سال ثبت نشده‌اند')}
+          </p>
+        )}
+        {variant !== 'date' && holidayFor(today) && (
           <p className="calendar-holiday-banner">امروز تعطیل رسمی · {holidayFor(today)}</p>
         )}
         <p className="calendar-tagline">روزت را به سبک خودت بساز.</p>
@@ -108,6 +127,7 @@ export function CalendarHero({ variant = 'full' }: { variant?: 'full' | 'date' |
               setView(null);
               setSelected(null);
               setNow(new Date());
+              onSelectDate?.(null);
             }}
           >
             <Icon name="calendar" />
@@ -141,7 +161,10 @@ export function CalendarHero({ variant = 'full' }: { variant?: 'full' | 'date' |
               aria-current={sameDay(day, today) ? 'date' : undefined}
               aria-pressed={day.day === current?.day}
               aria-label={`${WEEKDAYS[day.weekday]} ${faNumber(day.day)} ${MONTHS[day.month - 1]} ${day.holiday ? `، تعطیل رسمی: ${day.holiday}` : day.weekday === 6 ? '، تعطیل هفتگی' : ''}`}
-              onClick={() => setSelected(day.day)}
+              onClick={() => {
+                setSelected(day.day);
+                onSelectDate?.(sameDay(day, today) ? null : day.date);
+              }}
             >
               {faNumber(day.day)}
               {day.holiday && <span className="calendar-dot" aria-hidden="true" />}

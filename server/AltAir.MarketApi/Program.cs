@@ -79,4 +79,13 @@ app.MapGet("/api/weather/current", async (double latitude, double longitude, Wea
 }).RequireRateLimiting("quotes");
 
 app.MapLocalAuth();
+app.MapGet("/api/weather/day", async (double latitude, double longitude, string date, WeatherService service, HttpContext context, IWebHostEnvironment environment, CancellationToken token) =>
+{
+    if (!WeatherAllowed(context, environment)) return Results.Json(new { code = "weather_not_configured" }, statusCode: 503);
+    if (!WeatherService.ValidCoordinates(latitude,longitude) || !DateOnly.TryParseExact(date,"yyyy-MM-dd",System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.None,out var day)) return Results.BadRequest();
+    try { return Results.Ok(await service.DayAsync(latitude,longitude,day,token)); }
+    catch (ArgumentOutOfRangeException) { return Results.Json(new {code="date_out_of_range"},statusCode:422); }
+    catch (Exception error) when (error is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or InvalidOperationException or KeyNotFoundException or InvalidDataException or FormatException or TimeZoneNotFoundException)
+    { return Results.Json(new {code="weather_unavailable"},statusCode:503); }
+}).RequireRateLimiting("quotes");
 app.Run();

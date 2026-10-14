@@ -8,6 +8,15 @@ import { dailyChangePercent } from '../daily-change';
 import { isQuoteStale } from '../dollar-quote';
 
 const numberFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
+const compactPrice = new Intl.NumberFormat('en-US', {
+  notation: 'compact',
+  maximumFractionDigits: 2,
+});
+const compactChange = new Intl.NumberFormat('en-US', {
+  notation: 'compact',
+  maximumFractionDigits: 2,
+  signDisplay: 'exceptZero',
+});
 const changeFormat = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 1,
   signDisplay: 'exceptZero',
@@ -25,9 +34,11 @@ const dateFormat = new Intl.DateTimeFormat('fa-IR', {
 export function DollarCard({
   code = 'USD',
   compact = false,
+  table = false,
 }: {
   code?: CurrencyCode;
   compact?: boolean;
+  table?: boolean;
 }) {
   const { status, quote: basket, error } = useSyncExternalStore(subscribeMarket, getMarketSnapshot);
   const currency = currencies.find((item) => item.code === code) ?? currencies[0];
@@ -53,7 +64,7 @@ export function DollarCard({
   const stale = quote && (isQuoteStale(quote, now) || status === 'error');
   return (
     <GlassCard
-      className={`dollar-card currency-strip ${compact ? 'dollar-card--compact' : ''}`}
+      className={`dollar-card currency-strip ${compact ? 'dollar-card--compact' : ''} ${table ? 'market-table-entry' : ''}`}
       aria-label={currency.name}
       aria-busy={status === 'loading'}
     >
@@ -74,12 +85,20 @@ export function DollarCard({
                 aria-hidden="true"
               />
             )}
-            <span title={currency.name}>{currency.name}</span>
+            <span title={currency.name}>
+              {table && !code.startsWith('GOLD_') && !code.startsWith('COIN_')
+                ? code
+                : currency.name}
+            </span>
           </span>
           <span className="currency-price" aria-live="polite">
             {quote ? (
               <>
-                <strong dir="ltr">{numberFormat.format(quote.priceToman)}</strong>
+                <strong dir="ltr" title={numberFormat.format(quote.priceToman)}>
+                  {table && quote.priceToman >= 1_000_000
+                    ? compactPrice.format(quote.priceToman)
+                    : numberFormat.format(quote.priceToman)}
+                </strong>
 
                 <span
                   className={`currency-change ${change == null || change === 0 ? '' : change > 0 ? 'currency-change--up' : 'currency-change--down'}`}
@@ -87,7 +106,13 @@ export function DollarCard({
                   title={changeLabel}
                   aria-label={changeLabel}
                 >
-                  {change == null ? '—' : `${changeFormat.format(change)} (${percentageText})`}
+                  {change == null
+                    ? '—'
+                    : table
+                      ? Math.abs(change) >= 1_000_000
+                        ? compactChange.format(change)
+                        : changeFormat.format(change)
+                      : `${changeFormat.format(change)} (${percentageText})`}
                 </span>
               </>
             ) : (
@@ -97,6 +122,20 @@ export function DollarCard({
               </span>
             )}
           </span>
+          {table && !quote && (
+            <span className="market-change-unavailable" dir="ltr">
+              —
+            </span>
+          )}
+          {table && (
+            <span
+              className={`market-percent ${change == null || change === 0 ? '' : change > 0 ? 'currency-change--up' : 'currency-change--down'}`}
+              dir="ltr"
+              title={changeLabel}
+            >
+              {percentageText}
+            </span>
+          )}
           <span
             className={
               stale || error ? 'currency-indicator currency-indicator--stale' : 'currency-indicator'

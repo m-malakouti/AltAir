@@ -19,6 +19,7 @@ export default defineConfig({
         'https://www.google.com/*',
         'https://site.api.espn.com/*',
         'https://api.coinbase.com/*',
+        'https://api.exchange.coinbase.com/*',
         ...(endpoint ? [`${endpoint.protocol}//${endpoint.host}/*`] : []),
       ],
     };

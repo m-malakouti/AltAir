@@ -1,7 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { parseCryptoRates } from './crypto-rates';
+import { parseCryptoRates, parseCryptoStats } from './crypto-rates';
 import { currencyGroup } from './currencies';
 describe('market segments and crypto rates', () => {
+  it('calculates daily changes from the provider opening and latest price', () => {
+    expect(parseCryptoStats({ open: '100', last: '110' })).toEqual({
+      price: 110,
+      change: 10,
+      percent: 10,
+    });
+    expect(parseCryptoStats({ open: '100', last: '90' })).toEqual({
+      price: 90,
+      change: -10,
+      percent: -10,
+    });
+    expect(() => parseCryptoStats({ open: '0', last: '110' })).toThrow();
+    expect(() => parseCryptoStats({ open: 'NaN', last: '110' })).toThrow();
+  });
   it('keeps coins and gold separate from national currencies', () => {
     expect(currencyGroup('USD')).toBe('fiat');
     expect(currencyGroup('GOLD_18')).toBe('metals');

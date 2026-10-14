@@ -37,6 +37,25 @@ public sealed class WeatherService(IHttpClientFactory clients, IMemoryCache cach
     }
     public static bool ValidCoordinates(double latitude, double longitude) =>
         double.IsFinite(latitude) && double.IsFinite(longitude) && latitude is >= -90 and <= 90 && longitude is >= -180 and <= 180;
+    public async Task<WeatherDay> DayAsync(double latitude, double longitude, DateOnly date, CancellationToken token)
+    {
+        if (!ValidCoordinates(latitude, longitude)) throw new InvalidDataException();
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(clock.GetUtcNow(),TimeZoneInfo.FindSystemTimeZoneById("Asia/Tehran")).DateTime);
+        if (date < new DateOnly(1940,1,1) || date > today.AddDays(15)) throw new ArgumentOutOfRangeException(nameof(date));
+        var key = FormattableString.Invariant($"weather-day:{latitude:F4}:{longitude:F4}:{date:yyyy-MM-dd}");
+        await gate.WaitAsync(token);
+        try {
+            if (cache.TryGetValue<WeatherDay>(key, out var saved) && saved is not null) return saved;
+            var archive = date < today.AddDays(-5);
+            var host = archive ? "https://archive-api.open-meteo.com/v1/archive" : "https://api.open-meteo.com/v1/forecast";
+            var url = FormattableString.Invariant($"{host}?latitude={latitude:F4}&longitude={longitude:F4}&start_date={date:yyyy-MM-dd}&end_date={date:yyyy-MM-dd}&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,weather_code&temperature_unit=celsius&timeformat=unixtime&timezone=auto");
+            using var response = await clients.CreateClient("weather").GetAsync(url,token);
+            response.EnsureSuccessStatusCode();
+            var result = WeatherDayParser.Parse(await response.Content.ReadAsStringAsync(token),date,clock.GetUtcNow(), date < today);
+            cache.Set(key,result,TimeSpan.FromMinutes(15));
+            return result;
+        } finally { gate.Release(); }
+    }
 
     public async Task<WeatherNow> CurrentAsync(double latitude, double longitude, CancellationToken token)
     {

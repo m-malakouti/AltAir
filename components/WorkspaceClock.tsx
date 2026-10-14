@@ -54,7 +54,6 @@ export function WorkspaceClock() {
         <span className="grid-clock-hand grid-clock-hand--second" aria-hidden="true" />
         <span className="grid-clock-pin" aria-hidden="true" />
       </div>
-      <p className="workspace-clock-zone">به وقت تهران</p>
     </div>
   );
 }

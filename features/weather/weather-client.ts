@@ -1,6 +1,7 @@
 import { parseMarketEndpoint } from '@/features/market/market-endpoint';
 import { parseCity, parseWeather } from './weather-model';
 import type { WeatherCity, WeatherNow } from './weather-model';
+import { parseWeatherDay } from './weather-day';
 const configured: unknown = import.meta.env.WXT_MARKET_API_URL;
 const endpoint = parseMarketEndpoint(configured);
 export const weatherConfigured = Boolean(endpoint);
@@ -18,6 +19,7 @@ async function request(
     redirect: 'error',
     cache: 'no-store',
   });
+  if (response.status === 422) throw new Error('date_out_of_range');
   if (!response.ok) throw new Error('Weather service unavailable.');
   return (await response.json()) as unknown;
 }
@@ -33,5 +35,15 @@ export async function fetchWeather(city: WeatherCity, signal: AbortSignal): Prom
       { latitude: String(city.latitude), longitude: String(city.longitude) },
       signal,
     ),
+  );
+}
+export async function fetchWeatherDay(city: WeatherCity, date: string, signal: AbortSignal) {
+  return parseWeatherDay(
+    await request(
+      'day',
+      { latitude: String(city.latitude), longitude: String(city.longitude), date },
+      signal,
+    ),
+    date,
   );
 }

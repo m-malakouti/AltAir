@@ -3,7 +3,33 @@ export const cryptoCoins = [
   { code: 'ETH', name: 'اتریوم', symbol: 'Ξ' },
   { code: 'SOL', name: 'سولانا', symbol: '◎' },
   { code: 'USDT', name: 'تتر', symbol: '₮' },
+  { code: 'XRP', name: 'ریپل', symbol: 'X' },
+  { code: 'DOGE', name: 'دوج‌کوین', symbol: 'Ð' },
+  { code: 'ADA', name: 'کاردانو', symbol: '₳' },
+  { code: 'AVAX', name: 'آوالانچ', symbol: 'A' },
 ] as const;
+export interface CryptoQuote {
+  price: number;
+  change: number;
+  percent: number;
+}
+export function parseCryptoStats(value: unknown): CryptoQuote {
+  if (!value || typeof value !== 'object' || !('open' in value) || !('last' in value))
+    throw new Error('Invalid crypto stats');
+  const open = typeof value.open === 'string' && value.open.trim() ? Number(value.open) : NaN;
+  const price = typeof value.last === 'string' && value.last.trim() ? Number(value.last) : NaN;
+  const change = price - open;
+  const percent = (change / open) * 100;
+  if (
+    !Number.isFinite(price) ||
+    price <= 0 ||
+    !Number.isFinite(open) ||
+    open <= 0 ||
+    !Number.isFinite(percent)
+  )
+    throw new Error('Invalid crypto price');
+  return { price, change, percent };
+}
 export function parseCryptoRates(value: unknown): Record<string, number> {
   if (!value || typeof value !== 'object' || !('data' in value))
     throw new Error('Invalid crypto response');
