@@ -39,7 +39,7 @@ public sealed class NavasanService(
             {
                 var key = Uri.EscapeDataString(settings.ApiKey);
                 using var response = await clientFactory.CreateClient("navasan")
-                    .GetAsync($"https://api.navasan.tech/latest/?api_key={key}", cancellationToken);
+                    .GetAsync($"https://api.navasan.tech/latest/?api_key={key}&dollar_rate=true", cancellationToken);
                 response.EnsureSuccessStatusCode();
                 var json = await response.Content.ReadAsStringAsync(cancellationToken);
                 cached = NavasanParser.Parse(json, settings.PriceUnit, now, settings.StaleAfterMinutes);

@@ -1,5 +1,6 @@
 import { browser } from 'wxt/browser';
 import { parseBackground, type BackgroundPreference } from './background';
+import { backgroundPhotos } from './background-photos';
 
 const key = 'altAir.background';
 const listeners = new Set<() => void>();
@@ -14,6 +15,17 @@ function publish(value: unknown, error = '') {
   snapshot = { ...parseBackground(value), error };
   document.documentElement.dataset.background = snapshot.id;
   document.documentElement.style.setProperty('--custom-background', snapshot.color);
+  const photo = backgroundPhotos.find((item) => item.id === snapshot.id);
+  if (photo) {
+    document.documentElement.dataset.backgroundPhoto = photo.id;
+    document.documentElement.style.setProperty(
+      '--photo-background',
+      `url("/backgrounds/${photo.id}.jpg")`,
+    );
+  } else {
+    delete document.documentElement.dataset.backgroundPhoto;
+    document.documentElement.style.removeProperty('--photo-background');
+  }
   listeners.forEach((listener) => listener());
 }
 function cache(value: unknown) {

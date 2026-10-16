@@ -14,7 +14,13 @@ import type { WeatherCity, WeatherNow } from '../weather-model';
 import { searchCities, fetchWeather, weatherConfigured } from '../weather-client';
 import { WeatherDateCard } from './WeatherDateCard';
 
-export function WeatherCard({ selectedDate = null }: { selectedDate?: string | null }) {
+export function WeatherCard({
+  selectedDate = null,
+  compact = false,
+}: {
+  selectedDate?: string | null;
+  compact?: boolean;
+}) {
   const [city, setCity] = useState<WeatherCity | null>(null);
   const [ready, setReady] = useState(false);
   const [choosing, setChoosing] = useState(false);
@@ -31,10 +37,25 @@ export function WeatherCard({ selectedDate = null }: { selectedDate?: string | n
   const [tick, setTick] = useState(0);
   const [now, setNow] = useState(Date.now);
   const searchAbort = useRef<AbortController | null>(null);
+  const compactButton = useRef<HTMLButtonElement>(null);
   const key = city ? `${city.latitude},${city.longitude}` : '';
   const weather = result?.key === key ? result.weather : null;
   const stale =
     weather && (now - Date.parse(weather.observedAt) > 3_600_000 || Boolean(weatherError));
+
+  useEffect(() => {
+    if (!compact || !choosing) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      searchAbort.current?.abort();
+      setSearching(false);
+      setChoosing(false);
+      compactButton.current?.focus();
+    };
+    document.addEventListener('keydown', close);
+    return () => document.removeEventListener('keydown', close);
+  }, [compact, choosing]);
 
   useEffect(() => {
     let alive = true;
@@ -160,6 +181,7 @@ export function WeatherCard({ selectedDate = null }: { selectedDate?: string | n
       setResults([]);
       setQuery('');
       setSearched(false);
+      compactButton.current?.focus();
     } catch {
       setSelectionError('انتخاب شهر ذخیره نشد. دوباره تلاش کن.');
     } finally {
@@ -168,117 +190,162 @@ export function WeatherCard({ selectedDate = null }: { selectedDate?: string | n
   }
   const condition = weather ? weatherDescription(weather.code, weather.isDay) : null;
   return (
-    <GlassCard className="weather-card" aria-label="آب‌وهوا">
-      {selectedDate && city ? (
-        <WeatherDateCard city={city} date={selectedDate} onChangeCity={() => setChoosing(true)} />
-      ) : (
+    <GlassCard
+      className={`weather-card ${compact ? 'weather-card--compact' : ''}`}
+      aria-label="آب‌وهوا"
+    >
+      {compact && (
+        <button
+          ref={compactButton}
+          className="ambient-weather-summary"
+          type="button"
+          aria-label={`${city?.name ?? 'انتخاب شهر'}؛ ${weather ? `${Math.round(weather.temperature)} درجه، ${condition?.text ?? ''}` : 'دمای فعلی در دسترس نیست'}${stale ? '؛ دادهٔ قدیمی یا تأییدنشده' : ''}؛ تغییر شهر`}
+          aria-expanded={choosing}
+          title={stale ? 'آخرین دادهٔ ذخیره‌شده؛ قدیمی یا تأییدنشده' : 'انتخاب یا تغییر شهر'}
+          onClick={() => setChoosing((value) => !value)}
+        >
+          <span className="ambient-weather-temperature" dir="ltr">
+            <span aria-hidden="true">{condition?.symbol ?? '◌'}</span>
+            <strong>{weather ? `${Math.round(weather.temperature)}°` : loading ? '…' : '—'}</strong>
+            {stale && (
+              <small className="ambient-weather-stale" aria-hidden="true">
+                !
+              </small>
+            )}
+          </span>
+          <span className="ambient-weather-city">
+            {city?.name ?? (ready ? 'انتخاب شهر' : 'در حال خواندن…')}
+          </span>
+        </button>
+      )}
+      {compact && weatherError && !weather && (
+        <p className="helper-text" role="status">
+          آب‌وهوا در دسترس نیست.
+        </p>
+      )}
+      {compact && choosing && !weatherConfigured && (
+        <p className="helper-text">سرویس آب‌وهوا هنوز تنظیم نشده است.</p>
+      )}
+      {!compact && (
         <>
-          {!weatherConfigured && <p className="helper-text">سرویس آب‌وهوا هنوز تنظیم نشده است.</p>}
-          {city && (
-            <details>
-              <summary className="weather-row" title="جزئیات آب‌وهوا">
-                <span className="weather-city">{city.name}</span>
-                <span
-                  className="weather-condition"
-                  title={condition?.text}
-                  aria-label={condition?.text}
-                >
-                  {condition?.symbol ?? '◌'}
-                </span>
-                <strong dir="ltr">
-                  {weather ? `${Math.round(weather.temperature)}°C` : loading ? '…' : '—'}
-                </strong>
-                <span
-                  className={stale ? 'currency-indicator--stale' : ''}
-                  title={stale ? 'دادهٔ قدیمی یا تأییدنشده' : 'جزئیات'}
-                >
-                  {stale ? '!' : '⌄'}
-                </span>
-              </summary>
-              <div className="weather-extra">
-                {condition && (
-                  <p>
-                    {condition.text}
-                    {stale ? ' · دادهٔ قدیمی / تأییدنشده' : ''}
-                  </p>
-                )}
-                {weather && (
-                  <time dateTime={weather.observedAt}>
-                    {new Date(weather.observedAt).toLocaleString('fa-IR')}
-                  </time>
-                )}
-                {weatherError && <p role="status">{weatherError}</p>}
-                <div className="weather-tools">
-                  <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
-                    Open-Meteo
-                  </a>
-                  <button
-                    className="icon-button"
-                    aria-label="تغییر شهر"
-                    title="تغییر شهر"
-                    onClick={() => setChoosing(true)}
-                  >
-                    <Icon name="edit" />
-                  </button>
-                  <button
-                    className="icon-button"
-                    disabled={loading}
-                    aria-label="تازه‌سازی آب‌وهوا"
-                    title="تازه‌سازی"
-                    onClick={() => setTick((value) => value + 1)}
-                  >
-                    <Icon name="refresh" />
-                  </button>
-                </div>
-              </div>
-            </details>
-          )}
-          {weather && (
-            <div className="hourly-forecast">
-              <h3 className="sr-only">پیش‌بینی ۲۴ ساعت آینده به وقت شهر انتخاب‌شده</h3>
-              {weather.hourly?.some((hour) => Date.parse(hour.time) > now) ? (
-                <div
-                  className="hourly-strip"
-                  tabIndex={0}
-                  role="region"
-                  aria-label="پیش‌بینی ساعتی؛ برای ساعت‌های بعد پیمایش کن"
-                >
-                  {weather.hourly
-                    .filter((hour) => Date.parse(hour.time) > now)
-                    .map((hour) => {
-                      const description = weatherDescription(hour.code, hour.isDay);
-                      return (
-                        <div
-                          className="hourly-item"
-                          key={hour.time}
-                          title={`${new Date(hour.time).toLocaleString('fa-IR', { timeZone: weather.timezone ?? 'UTC' })} · ${description.text} · احتمال بارش ${hour.precipitationProbability === null ? 'نامشخص' : `${hour.precipitationProbability}٪`}`}
-                        >
-                          <time dateTime={hour.time}>
-                            {new Date(hour.time).toLocaleString('fa-IR', {
-                              timeZone: weather.timezone ?? 'UTC',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: false,
-                            })}
-                          </time>
-                          <span className="weather-condition" aria-label={description.text}>
-                            {description.symbol}
-                          </span>
-                          <strong dir="ltr">{Math.round(hour.temperature)}°</strong>
-                        </div>
-                      );
-                    })}
-                </div>
-              ) : (
-                <p className="helper-text">
-                  پیش‌بینی ساعتی در دسترس نیست؛ آب‌وهوا را تازه‌سازی کن.
-                </p>
+          {selectedDate && city ? (
+            <WeatherDateCard
+              city={city}
+              date={selectedDate}
+              onChangeCity={() => setChoosing(true)}
+            />
+          ) : (
+            <>
+              {!weatherConfigured && (
+                <p className="helper-text">سرویس آب‌وهوا هنوز تنظیم نشده است.</p>
               )}
-            </div>
+              {city && (
+                <details>
+                  <summary className="weather-row" title="جزئیات آب‌وهوا">
+                    <span className="weather-city">{city.name}</span>
+                    <span
+                      className="weather-condition"
+                      title={condition?.text}
+                      aria-label={condition?.text}
+                    >
+                      {condition?.symbol ?? '◌'}
+                    </span>
+                    <strong dir="ltr">
+                      {weather ? `${Math.round(weather.temperature)}°C` : loading ? '…' : '—'}
+                    </strong>
+                    <span
+                      className={stale ? 'currency-indicator--stale' : ''}
+                      title={stale ? 'دادهٔ قدیمی یا تأییدنشده' : 'جزئیات'}
+                    >
+                      {stale ? '!' : '⌄'}
+                    </span>
+                  </summary>
+                  <div className="weather-extra">
+                    {condition && (
+                      <p>
+                        {condition.text}
+                        {stale ? ' · دادهٔ قدیمی / تأییدنشده' : ''}
+                      </p>
+                    )}
+                    {weather && (
+                      <time dateTime={weather.observedAt}>
+                        {new Date(weather.observedAt).toLocaleString('fa-IR')}
+                      </time>
+                    )}
+                    {weatherError && <p role="status">{weatherError}</p>}
+                    <div className="weather-tools">
+                      <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
+                        Open-Meteo
+                      </a>
+                      <button
+                        className="icon-button"
+                        aria-label="تغییر شهر"
+                        title="تغییر شهر"
+                        onClick={() => setChoosing(true)}
+                      >
+                        <Icon name="edit" />
+                      </button>
+                      <button
+                        className="icon-button"
+                        disabled={loading}
+                        aria-label="تازه‌سازی آب‌وهوا"
+                        title="تازه‌سازی"
+                        onClick={() => setTick((value) => value + 1)}
+                      >
+                        <Icon name="refresh" />
+                      </button>
+                    </div>
+                  </div>
+                </details>
+              )}
+              {weather && (
+                <div className="hourly-forecast">
+                  <h3 className="sr-only">پیش‌بینی ۲۴ ساعت آینده به وقت شهر انتخاب‌شده</h3>
+                  {weather.hourly?.some((hour) => Date.parse(hour.time) > now) ? (
+                    <div
+                      className="hourly-strip"
+                      tabIndex={0}
+                      role="region"
+                      aria-label="پیش‌بینی ساعتی؛ برای ساعت‌های بعد پیمایش کن"
+                    >
+                      {weather.hourly
+                        .filter((hour) => Date.parse(hour.time) > now)
+                        .map((hour) => {
+                          const description = weatherDescription(hour.code, hour.isDay);
+                          return (
+                            <div
+                              className="hourly-item"
+                              key={hour.time}
+                              title={`${new Date(hour.time).toLocaleString('fa-IR', { timeZone: weather.timezone ?? 'UTC' })} · ${description.text} · احتمال بارش ${hour.precipitationProbability === null ? 'نامشخص' : `${hour.precipitationProbability}٪`}`}
+                            >
+                              <time dateTime={hour.time}>
+                                {new Date(hour.time).toLocaleString('fa-IR', {
+                                  timeZone: weather.timezone ?? 'UTC',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: false,
+                                })}
+                              </time>
+                              <span className="weather-condition" aria-label={description.text}>
+                                {description.symbol}
+                              </span>
+                              <strong dir="ltr">{Math.round(hour.temperature)}°</strong>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  ) : (
+                    <p className="helper-text">
+                      پیش‌بینی ساعتی در دسترس نیست؛ آب‌وهوا را تازه‌سازی کن.
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </>
       )}
-      {ready && (!city || choosing) && (
+      {ready && (choosing || (!city && !compact)) && (
         <div className="weather-picker">
           <form
             onSubmit={(event) => {
@@ -308,7 +375,7 @@ export function WeatherCard({ selectedDate = null }: { selectedDate?: string | n
             >
               <Icon name="search" />
             </button>
-            {city && (
+            {(city || compact) && (
               <button
                 className="icon-button"
                 type="button"
@@ -319,6 +386,7 @@ export function WeatherCard({ selectedDate = null }: { selectedDate?: string | n
                   searchAbort.current?.abort();
                   setSearching(false);
                   setChoosing(false);
+                  compactButton.current?.focus();
                 }}
               >
                 <Icon name="close" />
@@ -362,7 +430,17 @@ export function WeatherCard({ selectedDate = null }: { selectedDate?: string | n
           )}
         </div>
       )}
-      {selectionError && <Notice>{selectionError}</Notice>}
+      {compact && choosing && (
+        <a
+          className="ambient-weather-source"
+          href="https://open-meteo.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          دادهٔ آب‌وهوا: Open-Meteo
+        </a>
+      )}
+      {selectionError && (!compact || choosing || !ready) && <Notice>{selectionError}</Notice>}
       {!city && !ready && !selectionError && <span className="helper-text">در حال خواندن…</span>}
     </GlassCard>
   );

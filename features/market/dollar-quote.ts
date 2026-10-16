@@ -1,5 +1,6 @@
 import { currencies, isCurrencyCode } from './currencies';
 import type { CurrencyCode } from './currencies';
+import { parseNavasanCryptoRates, type CryptoRate } from './crypto-rates';
 export interface CurrencyRate {
   code: CurrencyCode;
   changeToman?: number | null;
@@ -8,6 +9,7 @@ export interface CurrencyRate {
 }
 export interface DollarQuote {
   rates?: CurrencyRate[];
+  cryptoRates?: CryptoRate[];
   instrument: 'USD_FREE_SELL';
   priceToman: number;
   updatedAt: string;
@@ -75,6 +77,9 @@ export function parseDollarQuote(value: unknown, now = Date.now()): DollarQuote 
   }
   return {
     ...(rates ? { rates } : {}),
+    ...(data.cryptoRates != null
+      ? { cryptoRates: parseNavasanCryptoRates(data.cryptoRates, now) }
+      : {}),
     instrument: 'USD_FREE_SELL',
     priceToman: data.priceToman,
     updatedAt: data.updatedAt,

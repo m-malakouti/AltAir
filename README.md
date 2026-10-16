@@ -1,4 +1,4 @@
-# Alt Air
+# AltAir360
 
 Your Space. Your Tools.
 
@@ -28,6 +28,12 @@ See [bookmark storage](docs/bookmark-storage.md).
 
 ## Development
 
+Commercial planning is maintained in the reusable
+[`altair-commercial` skill](skills/altair-commercial/SKILL.md), with its Persian
+[commercial blueprint](skills/altair-commercial/references/commercial-blueprint.md).
+It covers proposed sponsored placements, valid-click billing, dashboards and
+rollout; it does not activate advertising or tracking.
+
 Use Node.js 24 and npm. Install dependencies with `npm ci`, then run:
 
 ```sh
@@ -44,7 +50,18 @@ The production extension is generated at `.output/chrome-mv3`.
 WXT derives `side_panel.default_path: "sidepanel.html"` and the `sidePanel`
 permission from the Side Panel entrypoint. The storage permission persists the
 appearance preferences, market cache, and bookmarks in chrome.storage.local.
-An optional market proxy adds host access only for its configured origin. There is no background service worker or content script.
+An optional market proxy adds host access only for its configured origin. A background
+service worker uses `alarms` to restore Focus Time deadlines. Notifications are an
+optional permission requested only when enabled in Focus Time settings. There is no
+content script.
+
+## Focus Time
+
+The clock becomes a shared focus timer with pause/resume, task selection, short and
+long breaks, optional quiet view, sound, notifications, and local daily totals.
+Defaults are 25/5/15 minutes with a long break every four completed focus sessions.
+Starting the next phase is manual by default. See [Focus Time](docs/focus-time.md)
+for recovery behavior, limits, and installed-extension acceptance checks.
 
 The minimum Chrome version is 116 because opening the Side Panel from the Popup
 uses `sidePanel.open()`. Edge must support the same API; verify with a current
@@ -55,7 +72,7 @@ Edge build before declaring compatibility.
 1. Build the extension.
 2. In Chrome, open `chrome://extensions`; in Edge, open `edge://extensions`.
 3. Enable Developer mode and load `.output/chrome-mv3` as an unpacked extension.
-4. Open the Popup and check Alt Air branding, Persian text, RTL layout, and title.
+4. Open the Popup and check AltAir360 branding, Persian text, RTL layout, and title.
 5. Use Tab to focus the Side Panel button; check visible focus and activate with Enter.
 6. Confirm the Side Panel opens in the current browser window and the Popup closes.
 7. Confirm the Side Panel renders Persian text and remains usable at narrow widths.
@@ -94,6 +111,16 @@ Popup, Side Panel, and New Tab share the workspace preferences. A minimal weathe
 widget asks for a city on first use. See [weather and New Tab](docs/weather-newtab.md)
 for local setup, commercial-provider requirements, and acceptance checks.
 
+New Tab also includes a persistent «نمای آرام» toggle: a scenic background,
+centered digital clock, and compact weather in the upper right. When connectivity
+is lost, a locally rendered animated space scene offers retry and automatic recovery.
+Return with the same control or Escape; unsaved workspace drafts stay mounted.
+See [ambient view](docs/ambient-view.md) for behavior and verification.
+
+Live scores limit simultaneous ESPN requests to four. Automatic polling pauses
+after a failed refresh; use the refresh button or reconnect to retry. Fetching is
+also paused while the New Tab ambient view is active.
+
 ## Movable workspace and sticky notes
 
 Side Panel and New Tab contain four independently movable sections: bookmarks,
@@ -128,3 +155,16 @@ open views. Existing v1 order is migrated without rewriting user content. Hidden
 widgets remain mounted so unsaved drafts survive hide/show. Reset affects only
 layout. Calendar date numbers remain visible; action buttons use icons with
 accessible names and tooltips.
+
+## Search and commute carousel
+
+New Tab groups Google search and bookmarks on the first slide and home/work
+commuting on the second. Icon tabs, arrow/Home/End keys and touch control a
+responsive slider with automatic content height and reduced-motion support.
+Home/work addresses stay in local browser storage. The second slide now uses
+Neshan: a bundled, lazy-loaded OpenLayers map for drawing the route and picking
+home/work, plus a server connection for traffic-aware ETA. These stay inactive
+until the corresponding web-map and service keys are configured. Existing saved
+addresses are preserved. The outdated SDK traffic overlay is disabled; live trip
+duration comes from the routing API.
+See [commute setup and behavior](docs/commute.md).

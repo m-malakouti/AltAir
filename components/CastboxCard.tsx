@@ -91,8 +91,13 @@ export function CastboxCard() {
           <span aria-hidden="true">◉</span>
           <strong>اینجا گوش بده</strong>
           <p>پادکست را یک‌بار اضافه کن؛ همیشه از همین کارت بازش کن.</p>
-          <button className="castbox-button" onClick={() => setAdding(true)}>
-            افزودن پادکست
+          <button
+            className="icon-button"
+            aria-label="افزودن پادکست"
+            title="افزودن پادکست"
+            onClick={() => setAdding(true)}
+          >
+            <Icon name="plus" />
           </button>
         </div>
       )}
@@ -127,8 +132,13 @@ export function CastboxCard() {
               placeholder="https://castbox.fm/channel/..."
             />
           </label>
-          <button className="castbox-button" disabled={busy || !ready}>
-            ذخیره و باز کردن پلیر
+          <button
+            className="icon-button"
+            aria-label="ذخیره و باز کردن پلیر"
+            title="ذخیره و باز کردن پلیر"
+            disabled={busy || !ready}
+          >
+            <Icon name="save" />
           </button>
         </form>
       )}
@@ -158,10 +168,12 @@ export function CastboxCard() {
           </label>
           {!playing && (
             <button
-              className="castbox-button"
+              className="icon-button"
+              aria-label="باز کردن آخرین پادکست"
+              title="باز کردن آخرین پادکست"
               onClick={() => setActive(library.selected ?? library.items[0]?.id ?? null)}
             >
-              باز کردن آخرین پادکست
+              <Icon name="play" />
             </button>
           )}
         </>
@@ -210,7 +222,9 @@ export function CastboxCard() {
       )}
       {error && <Notice>{error}</Notice>}
       <details className="castbox-settings">
-        <summary>راهنمای شنیدن</summary>
+        <summary className="icon-button" aria-label="راهنمای شنیدن" title="راهنمای شنیدن">
+          <Icon name="info" />
+        </summary>
         <div className="castbox-help">
           <p>
             در Castbox از Share لینک کانال یا قسمت را کپی کن و اینجا اضافه کن. سپس دکمهٔ پخش داخل

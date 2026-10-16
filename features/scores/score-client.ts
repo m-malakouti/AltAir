@@ -4,28 +4,35 @@ export interface FeaturedMatch extends Match {
 }
 export async function fetchFeaturedScores(day: string, signal: AbortSignal) {
   const days = [shiftDate(day, -1), day];
-  const results = await Promise.allSettled(
-    leagues.map(async (league) => {
-      const pages = await Promise.all(
-        days.map(async (date) => {
-          const response = await fetch(
-            `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.id}/scoreboard?dates=${date.replaceAll('-', '')}&limit=100`,
-            {
-              credentials: 'omit',
-              cache: 'no-store',
-              signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]),
-            },
-          );
-          if (!response.ok) throw new Error(`Scores HTTP ${response.status}`);
-          return parseScoreboard((await response.json()) as unknown);
-        }),
-      );
-      return pages
-        .flat()
-        .filter((match) => tehranDate(new Date(match.date)) === day)
-        .map((match): FeaturedMatch => ({ ...match, league: league.name }));
-    }),
-  );
+  const results: PromiseSettledResult<FeaturedMatch[]>[] = [];
+  // Two leagues at a time: at most four requests instead of a fourteen-request burst.
+  for (let offset = 0; offset < leagues.length; offset += 2) {
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+    const batch = await Promise.allSettled(
+      leagues.slice(offset, offset + 2).map(async (league) => {
+        const pages = await Promise.allSettled(
+          days.map(async (date) => {
+            const response = await fetch(
+              `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.id}/scoreboard?dates=${date.replaceAll('-', '')}&limit=100`,
+              {
+                credentials: 'omit',
+                cache: 'no-store',
+                signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]),
+              },
+            );
+            if (!response.ok) throw new Error(`Scores HTTP ${response.status}`);
+            return parseScoreboard((await response.json()) as unknown);
+          }),
+        );
+        if (pages.some((page) => page.status === 'rejected')) throw new Error('League unavailable');
+        return pages
+          .flatMap((page) => (page.status === 'fulfilled' ? page.value : []))
+          .filter((match) => tehranDate(new Date(match.date)) === day)
+          .map((match): FeaturedMatch => ({ ...match, league: league.name }));
+      }),
+    );
+    results.push(...batch);
+  }
   if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
   const successful = results.filter((result) => result.status === 'fulfilled');
   if (!successful.length) throw new Error('All leagues unavailable');

@@ -13,14 +13,16 @@ export function WorkspaceShell({
   children,
   surface,
   navigation,
+  ambient = false,
 }: {
   children: ReactNode;
   surface: 'popup' | 'panel' | 'newtab';
   navigation?: ReactNode;
+  ambient?: boolean;
 }) {
   const { error, mode, setMode } = useTheme();
   return (
-    <div className={`workspace workspace--${surface}`}>
+    <div className={`workspace workspace--${surface} ${ambient ? 'workspace--ambient' : ''}`}>
       <BrandHeader navigation={navigation} compact={surface === 'newtab'} />
       <main className="workspace-content">
         {surface !== 'newtab' && <AccountCard />}

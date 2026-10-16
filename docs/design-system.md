@@ -1,5 +1,14 @@
 # Shared design system
 
+## Glass surfaces (2026-10-15)
+
+The shared surface recipe is adapted from [css.glass](https://css.glass/): translucent
+fill, 16px corners, a light 1px outline, and a soft `0 4px 30px` shadow. AltAir360
+uses theme-specific dark/light tints, 12px backdrop blur with 130% saturation, and
+a subtle inner highlight. Panels, focus, search, and settings share this recipe.
+Only the outer card blurs; nested components and market rows remain transparent.
+Unsupported browsers and reduced-transparency preferences use solid surfaces.
+
 ## Scope
 
 Popup and Side Panel share typography, semantic color tokens, glass surfaces,

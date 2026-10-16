@@ -24,7 +24,7 @@ function errorMessage(error: unknown): string {
       case 'category-not-found':
         return 'اطلاعات بوکمارک تغییر کرده است؛ فرم را دوباره باز کن.';
       case 'unsupported-version':
-        return 'این داده‌ها به نسخهٔ جدیدتری از آلت ایر نیاز دارند.';
+        return 'این داده‌ها به نسخهٔ جدیدتری از AltAir360 نیاز دارند.';
       case 'invalid-data':
         return 'داده‌های ذخیره‌شده قابل خواندن نیستند. برای حفظ اطلاعات، تغییری اعمال نشد.';
       case 'storage-write-failed':

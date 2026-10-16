@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { cryptoCoins, parseCryptoStats, type CryptoQuote } from '../crypto-rates';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { cryptoCoins } from '../crypto-rates';
+import { getMarketSnapshot, refreshMarket, subscribeMarket } from '../market-store';
 import { Icon } from '@/components/ui/Icon';
 import {
   readWorkspaceValue,
@@ -10,6 +11,13 @@ const selectionKey = 'altAir.market.crypto-selection';
 const defaults = ['BTC', 'ETH', 'SOL', 'USDT'];
 
 export function CryptoPrices() {
+  const { status, quote: basket, error } = useSyncExternalStore(subscribeMarket, getMarketSnapshot);
+  const loading = status === 'loading';
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
   const [selected, setSelected] = useState<string[]>(defaults);
   const [ready, setReady] = useState(false);
   const [picker, setPicker] = useState(false);
@@ -75,72 +83,20 @@ export function CryptoPrices() {
       setSaving(false);
     }
   }
-  const [prices, setPrices] = useState<Record<string, CryptoQuote>>({});
-  const [received, setReceived] = useState<number | null>(null);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [refresh, setRefresh] = useState(0);
-  useEffect(() => {
-    if (!ready || !selected.length) {
-      return;
-    }
-    const controller = new AbortController();
-    let running = false;
-    async function load() {
-      if (running || controller.signal.aborted) return;
-      running = true;
-      setLoading(true);
-      try {
-        const results = await Promise.allSettled(
-          cryptoCoins
-            .filter((coin) => selected.includes(coin.code))
-            .map(async (coin) => {
-              const response = await fetch(
-                `https://api.exchange.coinbase.com/products/${coin.code}-USD/stats`,
-                {
-                  credentials: 'omit',
-                  cache: 'no-store',
-                  signal: AbortSignal.any([controller.signal, AbortSignal.timeout(12000)]),
-                },
-              );
-              if (!response.ok) throw new Error('Crypto unavailable');
-              return {
-                code: coin.code,
-                quote: parseCryptoStats((await response.json()) as unknown),
-              };
-            }),
+  const missing =
+    ready && selected.some((code) => !basket?.cryptoRates?.some((rate) => rate.code === code));
+  const stale =
+    basket &&
+    (basket.fetchFailed ||
+      selected.some((code) => {
+        const rate = basket.cryptoRates?.find((item) => item.code === code);
+        return (
+          rate &&
+          (now - Date.parse(rate.updatedAt) > basket.staleAfterSeconds * 1000 ||
+            (rate.tomanUpdatedAt != null &&
+              now - Date.parse(rate.tomanUpdatedAt) > basket.staleAfterSeconds * 1000))
         );
-        const next: Record<string, CryptoQuote> = {};
-        for (const result of results) {
-          if (result.status === 'fulfilled') next[result.value.code] = result.value.quote;
-        }
-        if (!Object.keys(next).length) throw new Error('Crypto unavailable');
-        if (!controller.signal.aborted) {
-          setPrices(next);
-          setReceived(Date.now());
-          setError(results.some((result) => result.status === 'rejected'));
-        }
-      } catch {
-        if (!controller.signal.aborted) setError(true);
-      } finally {
-        running = false;
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    }
-    void load();
-    const timer = window.setInterval(() => {
-      if (!document.hidden) void load();
-    }, 60000);
-    const onVisible = () => {
-      if (!document.hidden) void load();
-    };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => {
-      controller.abort();
-      window.clearInterval(timer);
-      document.removeEventListener('visibilitychange', onVisible);
-    };
-  }, [refresh, selected, ready]);
+      }));
   return (
     <section className="market-segment" aria-label="کریپتو">
       <div className="market-segment-title">
@@ -157,10 +113,12 @@ export function CryptoPrices() {
         <small>USD · تغییر ۲۴ساعته</small>
         <button
           className="icon-button"
-          disabled={!ready || !selected.length || loading}
+          disabled={!ready || !selected.length || loading || status === 'unavailable'}
           title="تازه‌سازی کریپتو"
           aria-label="تازه‌سازی کریپتو"
-          onClick={() => setRefresh((value) => value + 1)}
+          onClick={() => {
+            void refreshMarket();
+          }}
         >
           <Icon name="refresh" />
         </button>
@@ -193,16 +151,16 @@ export function CryptoPrices() {
       {cryptoCoins
         .filter((coin) => selected.includes(coin.code))
         .map((coin) => {
-          const quote = prices[coin.code];
+          const quote = basket?.cryptoRates?.find((rate) => rate.code === coin.code);
           const tone =
-            !quote || quote.change === 0
+            !quote || quote.changeUsd == null || quote.changeUsd === 0
               ? ''
-              : quote.change > 0
+              : quote.changeUsd > 0
                 ? 'currency-change--up'
                 : 'currency-change--down';
           const format = (value: number, signed = false) =>
             value.toLocaleString('en-US', {
-              maximumFractionDigits: coin.code === 'USDT' ? 5 : 2,
+              maximumFractionDigits: Math.abs(value) < 1 ? 6 : 2,
               signDisplay: signed ? 'exceptZero' : 'auto',
             });
           return (
@@ -217,33 +175,61 @@ export function CryptoPrices() {
                 </span>
                 <span>{coin.code}USD</span>
               </span>
-              <strong dir="ltr">{quote ? format(quote.price) : loading ? '…' : '—'}</strong>
+              <strong dir="ltr">
+                {quote ? format(quote.priceUsd) : loading ? '…' : '—'}
+                {coin.code === 'USDT' && (
+                  <small
+                    className="crypto-toman-price"
+                    dir="rtl"
+                    title={
+                      quote?.tomanUpdatedAt
+                        ? `زمان نرخ تومانی: ${new Date(quote.tomanUpdatedAt).toLocaleString('fa-IR', { timeZone: 'Asia/Tehran' })}`
+                        : 'قیمت تومانی تتر در دسترس نیست'
+                    }
+                  >
+                    <bdi dir="ltr">
+                      {quote?.priceToman != null
+                        ? quote.priceToman.toLocaleString('en-US', { maximumFractionDigits: 0 })
+                        : loading
+                          ? '…'
+                          : '—'}
+                    </bdi>{' '}
+                    تومان
+                  </small>
+                )}
+              </strong>
               <span className={tone} dir="ltr">
-                {quote ? format(quote.change, true) : '—'}
+                {quote?.changeUsd != null ? format(quote.changeUsd, true) : '—'}
               </span>
               <span className={tone} dir="ltr">
-                {quote
+                {quote?.percent != null
                   ? `${quote.percent.toLocaleString('en-US', { maximumFractionDigits: 2, signDisplay: 'exceptZero' })}%`
                   : '—'}
               </span>
             </div>
           );
         })}
-      {error && (
+      {(error || stale || (!loading && missing)) && (
         <p className="helper-text" role="status">
-          {received
+          {basket?.cryptoRates?.length
             ? 'بعضی نرخ‌ها به‌روز نشدند؛ داده‌ها ممکن است قدیمی باشند.'
             : 'قیمت کریپتو در دسترس نیست؛ دوباره تلاش کن.'}
         </p>
       )}
       <div className="crypto-source">
-        <a href="https://www.coinbase.com/explore" target="_blank" rel="noopener noreferrer">
-          Coinbase ↗
+        <a href="https://www.navasan.net/" target="_blank" rel="noopener noreferrer">
+          نوسان ↗
         </a>
-        {received && (
-          <time dateTime={new Date(received).toISOString()}>
+        {basket && (
+          <time
+            dateTime={basket.fetchedAt}
+            title="دریافت مشترک با ارزها؛ کش سرور هر ۸ ساعت تازه می‌شود"
+          >
             دریافت{' '}
-            {new Date(received).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}
+            {new Date(basket.fetchedAt).toLocaleTimeString('fa-IR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </time>
         )}
       </div>

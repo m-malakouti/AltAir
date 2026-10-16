@@ -30,7 +30,7 @@ function matchStatus(match: Match) {
     hour12: false,
   }).format(new Date(match.date));
 }
-export function LiveScores() {
+export function LiveScores({ active = true }: { active?: boolean }) {
   const [day, setDay] = useState(tehranDate);
   const [liveOnly, setLiveOnly] = useState(false);
   const [tick, setTick] = useState(0);
@@ -46,17 +46,24 @@ export function LiveScores() {
   const key = day;
   const current = result?.key === key ? result : null;
   useEffect(() => {
+    if (!active) return;
     const refresh = () => {
+      if (!document.hidden && !error) setTick((value) => value + 1);
+    };
+    const reconnect = () => {
       if (!document.hidden) setTick((value) => value + 1);
     };
     const timer = window.setInterval(refresh, 30_000);
     document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('online', reconnect);
     return () => {
       window.clearInterval(timer);
       document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('online', reconnect);
     };
-  }, []);
+  }, [active, error]);
   useEffect(() => {
+    if (!active || document.hidden) return;
     const controller = new AbortController();
     async function load() {
       setLoading(true);
@@ -76,7 +83,7 @@ export function LiveScores() {
     }
     void load();
     return () => controller.abort();
-  }, [day, key, tick]);
+  }, [active, day, key, tick]);
   const matches = (current?.matches ?? [])
     .filter((match) => !liveOnly || match.state === 'in')
     .sort(rankMatches);
@@ -105,12 +112,20 @@ export function LiveScores() {
         >
           <Icon name="previous" />
         </button>
-        <button className="score-day" title="بازگشت به امروز" onClick={() => setDay(tehranDate())}>
+        <span className="score-day">
           {new Intl.DateTimeFormat('fa-IR', {
             month: 'long',
             day: 'numeric',
             timeZone: 'UTC',
           }).format(new Date(`${day}T12:00:00Z`))}
+        </span>
+        <button
+          className="icon-button"
+          aria-label="بازگشت به امروز"
+          title="بازگشت به امروز"
+          onClick={() => setDay(tehranDate())}
+        >
+          <Icon name="calendar" />
         </button>
         <button
           className="icon-button"
@@ -124,10 +139,12 @@ export function LiveScores() {
         </button>
         <button
           className="scores-live-filter"
+          aria-label="فقط زنده"
+          title="فقط زنده"
           aria-pressed={liveOnly}
           onClick={() => setLiveOnly(!liveOnly)}
         >
-          فقط زنده
+          <Icon name="live" />
         </button>
       </div>
       {error && (
@@ -179,8 +196,15 @@ export function LiveScores() {
         </p>
       )}
       {matches.length > 5 && (
-        <button className="todo-text-button" onClick={() => setExpanded(!expanded)}>
-          {expanded ? 'نمایش کمتر' : `همه مسابقات (${matches.length.toLocaleString('fa-IR')})`}
+        <button
+          className="icon-button"
+          title={expanded ? 'نمایش کمتر' : 'نمایش همهٔ مسابقات'}
+          aria-label={
+            expanded ? 'نمایش کمتر' : `همه مسابقات (${matches.length.toLocaleString('fa-IR')})`
+          }
+          onClick={() => setExpanded(!expanded)}
+        >
+          <Icon name={expanded ? 'collapse' : 'expand'} />
         </button>
       )}
       <footer className="scores-footer">

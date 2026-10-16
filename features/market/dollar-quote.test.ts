@@ -14,6 +14,24 @@ const quote = {
   sourceUrl: 'https://www.navasan.net/',
 };
 describe('market quote validation', () => {
+  it('preserves validated crypto through live responses and cached market snapshots', () => {
+    const cryptoRate = {
+      code: 'BTC',
+      priceUsd: 90000,
+      updatedAt: quote.updatedAt,
+      changeUsd: -1000,
+      percent: -1.1,
+    };
+    const parsed = parseDollarQuote(
+      { ...quote, cryptoRates: [cryptoRate, { ...cryptoRate, code: 'BAD' }] },
+      now,
+    );
+    expect(parsed.cryptoRates).toEqual([cryptoRate]);
+    expect(parseDollarQuote(parsed, now)).toEqual(parsed);
+    expect(parseDollarQuote({ ...quote, cryptoRates: 'invalid' }, now).priceToman).toBe(
+      quote.priceToman,
+    );
+  });
   it('accepts a valid free-market sell quote in toman', () => {
     expect(parseDollarQuote(quote, now)).toEqual(quote);
   });

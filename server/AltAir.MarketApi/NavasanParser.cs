@@ -26,9 +26,49 @@ public static class NavasanParser
                 or KeyNotFoundException or FormatException or OverflowException or ArgumentOutOfRangeException)
             { /* One unavailable currency must not discard valid rates. */ }
         }
+        var cryptoRates = new List<CryptoRate>();
+        foreach (var code in new[] { "BTC", "ETH", "SOL", "USDT", "XRP", "DOGE", "ADA", "AVAX" })
+        {
+            if (!document.RootElement.TryGetProperty(code.ToLowerInvariant(), out var item)) continue;
+            try { cryptoRates.Add(ParseCrypto(item, code, unit, now)); }
+            catch (Exception error) when (error is InvalidDataException or InvalidOperationException
+                or KeyNotFoundException or FormatException or OverflowException or ArgumentOutOfRangeException)
+            { /* An unavailable crypto must not discard valid market rates. */ }
+        }
         return new DollarQuote("USD_FREE_SELL", usd.PriceToman, usd.UpdatedAt, now,
-            checked(staleAfterMinutes * 60), false, "نوسان", "https://www.navasan.net/", rates);
+            checked(staleAfterMinutes * 60), false, "نوسان", "https://www.navasan.net/", rates, cryptoRates);
     }
+
+    private static CryptoRate ParseCrypto(JsonElement item, string code, string unit, DateTimeOffset now)
+    {
+        var price = ReadDecimal(item.GetProperty("dollar_rate"));
+        var updated = DateTimeOffset.FromUnixTimeSeconds(item.GetProperty("dollar_rate_time").GetInt64());
+        if (price <= 0 || price > 1_000_000_000_000m || updated < DateTimeOffset.UnixEpoch || updated > now.AddMinutes(5))
+            throw new InvalidDataException("Invalid crypto rate.");
+        decimal? percent = null;
+        decimal? change = null;
+        if (item.TryGetProperty("dollar_rate_24h_change", out var value) &&
+            value.ValueKind is JsonValueKind.String or JsonValueKind.Number &&
+            decimal.TryParse(value.ValueKind == JsonValueKind.String ? value.GetString() : value.GetRawText(),
+                NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) && parsed > -100 && parsed <= 1_000_000)
+        {
+            percent = parsed;
+            // The provider supplies a percentage, not a dollar amount.
+            change = price - price / (1 + parsed / 100);
+        }
+        CurrencyRate? toman = null;
+        if (code == "USDT")
+        {
+            try { toman = ParseRate(item, code, unit, now); }
+            catch (Exception error) when (error is InvalidDataException or InvalidOperationException
+                or KeyNotFoundException or FormatException or OverflowException or ArgumentOutOfRangeException)
+            { /* Missing local prices must not discard a valid USD quote. */ }
+        }
+        return new CryptoRate(code, price, updated, change, percent, toman?.PriceToman, toman?.UpdatedAt);
+    }
+
+    private static decimal ReadDecimal(JsonElement value) => value.ValueKind == JsonValueKind.String
+        ? decimal.Parse(value.GetString()!, CultureInfo.InvariantCulture) : value.GetDecimal();
 
     private static CurrencyRate ParseRate(JsonElement item, string code, string unit, DateTimeOffset now)
     {

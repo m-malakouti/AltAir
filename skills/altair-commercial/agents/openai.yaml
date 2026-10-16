@@ -1,0 +1,4 @@
+interface:
+  display_name: 'AltAir360 Commercial'
+  short_description: 'Plan sponsored links, billing, and commercial growth'
+  default_prompt: 'Use $altair-commercial to plan the next commercial milestone for AltAir360, grounded in the current repository.'

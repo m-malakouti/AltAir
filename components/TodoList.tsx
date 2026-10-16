@@ -3,7 +3,7 @@ import { TASKS_KEY, readTasks, updateTasks, type Task } from '@/features/tasks/t
 import { watchWorkspaceValue } from '@/lib/browser/workspace-storage';
 import { Icon } from './ui/Icon';
 
-export function TodoList() {
+export function TodoList({ onFocusTask }: { onFocusTask?: (task: Task) => void }) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -153,7 +153,9 @@ export function TodoList() {
           </button>
         </div>
         <details className="todo-options" open={editing ? true : undefined}>
-          <summary>اولویت و موعد</summary>
+          <summary className="icon-button" aria-label="اولویت و موعد" title="اولویت و موعد">
+            <Icon name="settings" />
+          </summary>
           <div>
             <label>
               اولویت
@@ -178,8 +180,14 @@ export function TodoList() {
           </div>
         </details>
         {editing && (
-          <button className="todo-text-button" type="button" onClick={reset}>
-            انصراف از ویرایش
+          <button
+            className="icon-button"
+            type="button"
+            aria-label="انصراف از ویرایش"
+            title="انصراف از ویرایش"
+            onClick={reset}
+          >
+            <Icon name="close" />
           </button>
         )}
       </form>
@@ -193,13 +201,15 @@ export function TodoList() {
         ).map(([value, label]) => (
           <button
             key={value}
+            aria-label={label}
+            title={label}
             aria-pressed={filter === value}
             onClick={() => {
               setFilter(value);
               setExpanded(false);
             }}
           >
-            {label}
+            <Icon name={value === 'active' ? 'list' : value === 'today' ? 'calendar' : 'check'} />
           </button>
         ))}
       </div>
@@ -208,6 +218,9 @@ export function TodoList() {
           {error}{' '}
           {!ready && (
             <button
+              className="icon-button"
+              aria-label="تلاش دوباره"
+              title="تلاش دوباره"
               onClick={() => {
                 void readTasks()
                   .then((next) => {
@@ -218,7 +231,7 @@ export function TodoList() {
                   .catch(() => setError('خواندن کارها انجام نشد.'));
               }}
             >
-              تلاش دوباره
+              <Icon name="refresh" />
             </button>
           )}
         </p>
@@ -259,6 +272,16 @@ export function TodoList() {
               </span>
             </label>
             <div className="todo-tools">
+              {!task.done && onFocusTask && (
+                <button
+                  className="icon-button"
+                  title={`تمرکز روی ${task.title}`}
+                  aria-label={`تمرکز روی ${task.title}`}
+                  onClick={() => onFocusTask(task)}
+                >
+                  <Icon name="play" />
+                </button>
+              )}
               <button
                 className="icon-button"
                 title="ویرایش"
@@ -305,14 +328,24 @@ export function TodoList() {
         </p>
       )}
       {visible.length > 6 && (
-        <button className="todo-text-button" onClick={() => setExpanded(!expanded)}>
-          {expanded ? 'نمایش کمتر' : `نمایش همه (${visible.length.toLocaleString('fa-IR')})`}
+        <button
+          className="icon-button"
+          aria-label={
+            expanded ? 'نمایش کمتر' : `نمایش همه (${visible.length.toLocaleString('fa-IR')})`
+          }
+          title={expanded ? 'نمایش کمتر' : 'نمایش همهٔ کارها'}
+          onClick={() => setExpanded(!expanded)}
+        >
+          <Icon name={expanded ? 'collapse' : 'expand'} />
         </button>
       )}
       {removed && (
         <div className="todo-undo" role="status">
           کار حذف شد.
           <button
+            className="icon-button"
+            aria-label="بازگردانی کار حذف‌شده"
+            title="بازگردانی کار حذف‌شده"
             disabled={busy}
             onClick={() => {
               void mutate(
@@ -322,7 +355,7 @@ export function TodoList() {
               );
             }}
           >
-            بازگردانی
+            <Icon name="undo" />
           </button>
         </div>
       )}

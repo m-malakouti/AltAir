@@ -9,7 +9,7 @@ export function TopSitesSettings() {
       </summary>
       <div className="top-sites-options">
         <p className="helper-text">
-          شش سایت پرتکرار مرورگر را پیش از بوکمارک‌ها نمایش بده. فهرست به سرور آلت ایر ارسال
+          شش سایت پرتکرار مرورگر را پیش از بوکمارک‌ها نمایش بده. فهرست به سرور AltAir360 ارسال
           نمی‌شود.
         </p>
         {!frequent.supported ? (

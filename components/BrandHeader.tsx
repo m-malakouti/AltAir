@@ -1,6 +1,7 @@
 import { useTheme } from '@/features/appearance/use-theme';
 import { Button } from './ui/Button';
 import type { ReactNode } from 'react';
+import { Icon } from './ui/Icon';
 
 export function BrandHeader({
   navigation,
@@ -18,7 +19,7 @@ export function BrandHeader({
           <img className="brand-mark" src="/altair-logo.svg" alt="" aria-hidden="true" />
           <div>
             <h1 lang="en" dir="ltr">
-              Alt Air
+              AltAir360
             </h1>
             <p lang="en" dir="ltr">
               Your Space. Your Tools.
@@ -26,14 +27,20 @@ export function BrandHeader({
           </div>
         </div>
       )}
+      {compact && (
+        <span className="brand-wordmark" lang="en" dir="ltr">
+          AltAir<span>360</span>
+        </span>
+      )}
       <div className="brand-controls">
         <Button
           variant="ghost"
           className="theme-toggle"
           aria-label={next === 'light' ? 'تغییر به حالت روشن' : 'تغییر به حالت تیره'}
+          title={next === 'light' ? 'تغییر به حالت روشن' : 'تغییر به حالت تیره'}
           onClick={() => setMode(next)}
         >
-          <span aria-hidden="true">{resolved === 'dark' ? '☀' : '☾'}</span>
+          <Icon name={resolved === 'dark' ? 'sun' : 'moon'} />
         </Button>
         {navigation}
       </div>

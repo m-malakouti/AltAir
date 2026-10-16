@@ -8,15 +8,6 @@ import { dailyChangePercent } from '../daily-change';
 import { isQuoteStale } from '../dollar-quote';
 
 const numberFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
-const compactPrice = new Intl.NumberFormat('en-US', {
-  notation: 'compact',
-  maximumFractionDigits: 2,
-});
-const compactChange = new Intl.NumberFormat('en-US', {
-  notation: 'compact',
-  maximumFractionDigits: 2,
-  signDisplay: 'exceptZero',
-});
 const changeFormat = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 1,
   signDisplay: 'exceptZero',
@@ -95,9 +86,7 @@ export function DollarCard({
             {quote ? (
               <>
                 <strong dir="ltr" title={numberFormat.format(quote.priceToman)}>
-                  {table && quote.priceToman >= 1_000_000
-                    ? compactPrice.format(quote.priceToman)
-                    : numberFormat.format(quote.priceToman)}
+                  {numberFormat.format(quote.priceToman)}
                 </strong>
 
                 <span
@@ -109,9 +98,7 @@ export function DollarCard({
                   {change == null
                     ? '—'
                     : table
-                      ? Math.abs(change) >= 1_000_000
-                        ? compactChange.format(change)
-                        : changeFormat.format(change)
+                      ? changeFormat.format(change)
                       : `${changeFormat.format(change)} (${percentageText})`}
                 </span>
               </>

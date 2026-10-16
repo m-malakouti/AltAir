@@ -175,7 +175,7 @@ export function CurrencyBoard() {
                     if (target) void move(code, target);
                   }}
                 >
-                  ⠿
+                  <Icon name="grip" />
                 </button>
                 <DollarCard code={code} table />
               </div>

@@ -5,6 +5,10 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<NavasanOptions>(builder.Configuration.GetSection("Navasan"));
+builder.Services.Configure<NeshanOptions>(builder.Configuration.GetSection("Neshan"));
+builder.Services.AddSingleton<CommuteService>();
+builder.Services.AddHttpClient("commute", client => client.Timeout = TimeSpan.FromSeconds(8))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddSingleton(TimeProvider.System);
 var authDirectory = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "auth");
 var protection = builder.Services.AddDataProtection().SetApplicationName("AltAir.LocalAuth")
@@ -27,6 +31,10 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("commute", limiter => {
+        limiter.PermitLimit = 12; limiter.Window = TimeSpan.FromMinutes(1);
+        limiter.QueueLimit = 0; limiter.AutoReplenishment = true;
+    });
     options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown", _ => new FixedWindowRateLimiterOptions
         { PermitLimit = 30, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
@@ -42,6 +50,7 @@ builder.Services.AddRateLimiter(options =>
 var app = builder.Build();
 app.UseCors();
 app.UseRateLimiter();
+app.MapCommute();
 app.MapGet("/api/market/usd", async (NavasanService service, HttpContext context, IWebHostEnvironment environment, CancellationToken cancellationToken) =>
 {
     try

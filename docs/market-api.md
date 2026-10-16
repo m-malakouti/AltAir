@@ -1,5 +1,29 @@
 # Market API preparation and next workspace experience
 
+## Crypto and full price display (2026-10-15)
+
+Prices and daily changes use full grouped numbers, including million-toman values.
+Market columns adapt to their container without horizontal scrolling; full amounts
+remain visible and can wrap at very narrow widths.
+Crypto USD prices and 24-hour percentages now come from Navasan's `dollar_rate=true`
+fields in the same provider response as fiat and metals, replacing direct Coinbase
+requests. The server returns optional `cryptoRates` for BTC, ETH, SOL, USDT, XRP,
+DOGE, ADA, and AVAX. Each rate uses its own `dollar_rate_time`; missing or invalid
+prices are omitted and missing changes remain unavailable. USD changes are derived
+from the provider percentage and previous USD price, never from the toman change.
+The frontend validates and caches these fields with the existing market snapshot.
+Old snapshots without crypto rates remain readable.
+
+USDT also exposes the provider's local `value` as `priceToman`, normalized using
+the configured price unit, and its separate `timestamp` as `tomanUpdatedAt`.
+The local price appears below its USD price and participates in stale-data checks.
+It is not estimated from the cash USD rate; old or missing local values show a dash.
+
+Crypto shares the existing eight-hour server cache, monthly request budget, and
+manual refresh behavior. It is not a live minute-by-minute price feed. Stale data
+is labeled after the configured freshness window. This avoids additional provider
+calls for each coin, selection change, or open workspace.
+
 ## Delivered scope
 
 The Popup now prioritizes fast workspace access and a compact USD card.

@@ -3,14 +3,14 @@ import { useState, type ReactNode } from 'react';
 import { CalendarHero } from '@/features/calendar/ui/CalendarHero';
 import { WeatherCard } from '@/features/weather/ui/WeatherCard';
 import { CurrencyBoard } from '@/features/market/ui/CurrencyBoard';
-import { BookmarkManager } from '@/features/bookmarks/ui/BookmarkManager';
 import { StickyNotes } from '@/features/notes/ui/StickyNotes';
-import { WebSearch } from './WebSearch';
-import { WorkspaceClock } from './WorkspaceClock';
-import { GoogleLogo } from './GoogleLogo';
+import { WorkspaceCarousel } from './WorkspaceCarousel';
+import { FocusClock } from '@/features/focus/ui/FocusClock';
+import type { Task } from '@/features/tasks/tasks-store';
 import { TodoList } from './TodoList';
 import { LiveScores } from './LiveScores';
 import { CastboxCard } from './CastboxCard';
+import { AmbientView } from './AmbientView';
 function Slot({ area, title, children }: { area: string; title: string; children: ReactNode }) {
   return (
     <section className={`sketch-card sketch-${area}`} aria-label={title}>
@@ -33,41 +33,34 @@ function Placeholder({ lines = 3 }: { lines?: number }) {
     </div>
   );
 }
-export function SketchWorkspace() {
+export function SketchWorkspace({ ambient = false }: { ambient?: boolean }) {
   const [weatherDate, setWeatherDate] = useState<string | null>(null);
+  const [quiet, setQuiet] = useState(false);
+  const [focusTask, setFocusTask] = useState<Task | null>(null);
   return (
-    <div className="sketch-workspace">
+    <div
+      className={`sketch-workspace ${quiet && !ambient ? 'sketch-workspace--quiet' : ''} ${ambient ? 'sketch-workspace--ambient' : ''}`}
+    >
+      {ambient && <AmbientView />}
       <div className="sketch-clock-stack">
-        <Slot area="clock" title="ساعت">
-          <WorkspaceClock />
-        </Slot>
         <Slot area="date" title="امروز">
           <CalendarHero variant="date" />
         </Slot>
+        <Slot area="clock" title="ساعت">
+          <FocusClock requestedTask={focusTask} quiet={quiet} onQuietChange={setQuiet} />
+        </Slot>
+        <aside className="sketch-left">
+          <Slot area="tasks" title="کارهای من">
+            <TodoList onFocusTask={(task) => setFocusTask({ ...task })} />
+          </Slot>
+          <Slot area="ad-one" title="تبلیغات ۱">
+            <div className="advertisement-placeholder">فضای تبلیغاتی</div>
+          </Slot>
+          <Slot area="ad-two" title="تبلیغات ۲">
+            <div className="advertisement-placeholder">فضای تبلیغاتی</div>
+          </Slot>
+        </aside>
       </div>
-      <section className="sketch-notes" aria-label="یادداشت‌ها">
-        <StickyNotes />
-      </section>
-      <Slot area="month" title="تقویم">
-        <CalendarHero
-          variant="month"
-          onSelectDate={(date) =>
-            setWeatherDate(
-              date
-                ? new Intl.DateTimeFormat('en-CA', {
-                    timeZone: 'Asia/Tehran',
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                  }).format(date)
-                : null,
-            )
-          }
-        />
-      </Slot>
-      <Slot area="weather" title="آب‌وهوا">
-        <WeatherCard selectedDate={weatherDate} />
-      </Slot>
       <aside className="sketch-right">
         <Slot area="account" title="حساب کاربری">
           <AccountCard />
@@ -79,33 +72,41 @@ export function SketchWorkspace() {
           <CastboxCard />
         </Slot>
       </aside>
-      <aside className="sketch-left">
-        <Slot area="ad-one" title="تبلیغات ۱">
-          <div className="advertisement-placeholder">فضای تبلیغاتی</div>
-        </Slot>
-        <Slot area="tasks" title="کارهای من">
-          <TodoList />
-        </Slot>
-        <Slot area="ad-two" title="تبلیغات ۲">
-          <div className="advertisement-placeholder">فضای تبلیغاتی</div>
-        </Slot>
-      </aside>
-      <div className="sketch-center">
-        <section className="sketch-search" aria-label="جست‌وجو در گوگل">
-          <GoogleLogo />
-          <WebSearch />
-        </section>
-        <Slot area="bookmarks" title="بوکمارک‌ها">
-          <BookmarkManager />
-        </Slot>
-      </div>
-      <div className="sketch-bottom">
-        <Slot area="scores" title="نتایج زنده">
-          <LiveScores />
-        </Slot>
-        <Slot area="ads" title="تبلیغات">
-          <Placeholder lines={0} />
-        </Slot>
+      <div className="sketch-main">
+        <WorkspaceCarousel />
+        <div className="sketch-widgets">
+          <section className="sketch-notes" aria-label="یادداشت‌ها">
+            <StickyNotes />
+          </section>
+          <Slot area="month" title="تقویم">
+            <CalendarHero
+              variant="month"
+              onSelectDate={(date) =>
+                setWeatherDate(
+                  date
+                    ? new Intl.DateTimeFormat('en-CA', {
+                        timeZone: 'Asia/Tehran',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                      }).format(date)
+                    : null,
+                )
+              }
+            />
+          </Slot>
+          <Slot area="weather" title="آب‌وهوا">
+            <WeatherCard selectedDate={ambient ? null : weatherDate} compact={ambient} />
+          </Slot>
+        </div>
+        <div className="sketch-bottom">
+          <Slot area="scores" title="نتایج زنده">
+            <LiveScores active={!ambient} />
+          </Slot>
+          <Slot area="ads" title="تبلیغات">
+            <Placeholder lines={0} />
+          </Slot>
+        </div>
       </div>
     </div>
   );

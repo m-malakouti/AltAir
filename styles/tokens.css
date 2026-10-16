@@ -21,6 +21,9 @@
   --glow-blue: rgb(120 136 246 / 16%);
   --glow-purple: rgb(168 121 235 / 12%);
   --shadow-card: 0 12px 36px rgb(0 0 0 / 16%);
+  --glass-fill: rgb(18 29 49 / 50%);
+  --glass-border: rgb(255 255 255 / 20%);
+  --glass-shadow: 0 4px 30px rgb(0 0 0 / 10%), inset 0 1px 0 rgb(255 255 255 / 7%);
   color-scheme: dark;
 }
 :root[data-theme='light'] {
@@ -45,6 +48,9 @@
   --glow-blue: rgb(120 136 246 / 13%);
   --glow-purple: rgb(168 121 235 / 10%);
   --shadow-card: 0 12px 36px rgb(50 66 112 / 8%);
+  --glass-fill: rgb(255 255 255 / 54%);
+  --glass-border: rgb(255 255 255 / 46%);
+  --glass-shadow: 0 4px 30px rgb(35 49 83 / 10%), inset 0 1px 0 rgb(255 255 255 / 55%);
   color-scheme: light;
 }
 :root {
@@ -59,4 +65,5 @@
   --radius-panel: 20px;
   --duration-fast: 180ms;
   --blur-glass: 16px;
+  --glass-filter: blur(12px) saturate(130%);
 }

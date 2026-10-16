@@ -169,6 +169,6 @@ public sealed class NavasanTests
         public int Calls { get; private set; }
         public HttpStatusCode Status { get; set; } = HttpStatusCode.OK;
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
-        { Assert.DoesNotContain("item=", request.RequestUri!.Query); Calls++; return Task.FromResult(new HttpResponseMessage(Status) { Content = new StringContent(Payload) }); }
+        { Assert.DoesNotContain("item=", request.RequestUri!.Query); Assert.Contains("dollar_rate=true", request.RequestUri.Query); Calls++; return Task.FromResult(new HttpResponseMessage(Status) { Content = new StringContent(Payload) }); }
     }
 }

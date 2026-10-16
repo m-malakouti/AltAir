@@ -1,7 +1,57 @@
 import { describe, expect, it } from 'vitest';
-import { parseCryptoRates, parseCryptoStats } from './crypto-rates';
+import { parseCryptoRates, parseCryptoStats, parseNavasanCryptoRates } from './crypto-rates';
 import { currencyGroup } from './currencies';
 describe('market segments and crypto rates', () => {
+  it('preserves a validated local tether price with its independent timestamp', () => {
+    const updatedAt = '2026-10-15T10:00:00Z';
+    const rate = {
+      code: 'USDT',
+      priceUsd: 0.999,
+      updatedAt,
+      changeUsd: null,
+      percent: null,
+      priceToman: 123456,
+      tomanUpdatedAt: '2026-10-15T09:00:00Z',
+    };
+    const now = Date.parse(updatedAt);
+    expect(parseNavasanCryptoRates([rate], now)).toEqual([rate]);
+    for (const invalid of [
+      { priceToman: -1 },
+      { priceToman: Infinity },
+      { tomanUpdatedAt: 'invalid' },
+      { tomanUpdatedAt: '2026-10-16T10:00:00Z' },
+    ]) {
+      expect(parseNavasanCryptoRates([{ ...rate, ...invalid }], now)).toEqual([
+        { code: 'USDT', priceUsd: 0.999, updatedAt, changeUsd: null, percent: null },
+      ]);
+    }
+  });
+  it('validates server crypto prices independently and preserves fractional USD prices', () => {
+    const updatedAt = '2026-10-15T10:00:00Z';
+    const now = Date.parse(updatedAt);
+    const rate = { code: 'DOGE', priceUsd: 0.080382, changeUsd: -0.004, percent: -4.7, updatedAt };
+    expect(parseNavasanCryptoRates([rate, { ...rate, code: 'BTC', priceUsd: 0 }], now)).toEqual([
+      rate,
+    ]);
+    expect(parseNavasanCryptoRates([rate, rate], now)).toHaveLength(1);
+    expect(parseNavasanCryptoRates([{ ...rate, updatedAt: 'invalid' }], now)).toEqual([]);
+    expect(parseNavasanCryptoRates([{ ...rate, updatedAt: '2026-10-16T10:00:00Z' }], now)).toEqual(
+      [],
+    );
+    expect(parseNavasanCryptoRates(undefined, now)).toEqual([]);
+  });
+  it('keeps missing crypto changes unavailable rather than inventing zero', () => {
+    const rate = { code: 'USDT', priceUsd: 0.999077, updatedAt: '2026-10-15T10:00:00Z' };
+    expect(parseNavasanCryptoRates([rate], Date.parse(rate.updatedAt))).toEqual([
+      { ...rate, changeUsd: null, percent: null },
+    ]);
+    expect(
+      parseNavasanCryptoRates(
+        [{ ...rate, percent: -100, changeUsd: 1 }],
+        Date.parse(rate.updatedAt),
+      )[0]?.percent,
+    ).toBeNull();
+  });
   it('calculates daily changes from the provider opening and latest price', () => {
     expect(parseCryptoStats({ open: '100', last: '110' })).toEqual({
       price: 110,
