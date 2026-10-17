@@ -6,4 +6,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <UserSecretsId>AltAir-MarketApi-Local</UserSecretsId>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Admin/**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

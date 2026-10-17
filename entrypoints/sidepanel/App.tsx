@@ -31,6 +31,7 @@ export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab
     modeButton.current?.focus();
     const escape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || event.defaultPrevented) return;
+      if (document.fullscreenElement) return;
       // Let an open city picker or other dialog handle Escape first.
       if (document.querySelector('dialog[open], .weather-picker')) return;
       event.preventDefault();

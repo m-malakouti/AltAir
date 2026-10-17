@@ -13,8 +13,11 @@ export async function saveCommutePlaces(places: CommutePlaces | null) {
   if (extension()) {
     if (places) await browser.storage.local.set({ [key]: places });
     else await browser.storage.local.remove(key);
-  } else if (places) localStorage.setItem(key, JSON.stringify(places));
-  else localStorage.removeItem(key);
+  } else {
+    if (places) localStorage.setItem(key, JSON.stringify(places));
+    else localStorage.removeItem(key);
+    window.dispatchEvent(new Event(key));
+  }
 }
 export function watchCommutePlaces(callback: () => void): () => void {
   if (extension()) {
@@ -28,5 +31,9 @@ export function watchCommutePlaces(callback: () => void): () => void {
     if (event.key === key || event.key === null) callback();
   };
   window.addEventListener('storage', listener);
-  return () => window.removeEventListener('storage', listener);
+  window.addEventListener(key, callback);
+  return () => {
+    window.removeEventListener('storage', listener);
+    window.removeEventListener(key, callback);
+  };
 }

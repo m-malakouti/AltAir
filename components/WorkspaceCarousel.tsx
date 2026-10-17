@@ -1,7 +1,9 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { BookmarkManager } from '@/features/bookmarks/ui/BookmarkManager';
 import { CommuteCard } from '@/features/commute/ui/CommuteCard';
+import { SavedCommuteCard } from '@/features/commute/ui/SavedCommuteCard';
 import { GoogleLogo } from './GoogleLogo';
+import { PuffyCompanion } from './PuffyCompanion';
 import { WebSearch } from './WebSearch';
 import { Icon } from './ui/Icon';
 import { ActionButton } from './ui/ActionButton';
@@ -132,12 +134,16 @@ export function WorkspaceCarousel() {
               {index === 0 ? (
                 <div className="sketch-center">
                   <section className="sketch-search" aria-label="جست‌وجو در گوگل">
-                    <GoogleLogo />
+                    <div className="search-companion-stage">
+                      <GoogleLogo />
+                      <PuffyCompanion active={active === 0} />
+                    </div>
                     <WebSearch />
                   </section>
                   <section className="sketch-card sketch-bookmarks" aria-label="بوکمارک‌ها">
                     <BookmarkManager />
                   </section>
+                  <SavedCommuteCard onOpen={() => select(1, true)} />
                 </div>
               ) : (
                 <CommuteCard active={active === 1} />

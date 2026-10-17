@@ -25,6 +25,24 @@ export function TodoList({ onFocusTask }: { onFocusTask?: (task: Task) => void }
   );
   const input = useRef<HTMLInputElement>(null);
   const writing = useRef(false);
+  const board = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const show = (event: Event) => {
+      const id = (event as CustomEvent<unknown>).detail;
+      if (typeof id !== 'string') return;
+      setFilter('active');
+      setExpanded(true);
+      requestAnimationFrame(() => {
+        const row = Array.from(
+          board.current?.querySelectorAll<HTMLElement>('[data-task-id]') ?? [],
+        ).find((node) => node.dataset.taskId === id);
+        row?.scrollIntoView({ block: 'center', behavior: 'auto' });
+        row?.focus();
+      });
+    };
+    window.addEventListener('altair:show-task', show);
+    return () => window.removeEventListener('altair:show-task', show);
+  }, []);
   useEffect(() => {
     let alive = true;
     let revision = 0;
@@ -99,7 +117,7 @@ export function TodoList({ onFocusTask }: { onFocusTask?: (task: Task) => void }
         (a.due || '9999').localeCompare(b.due || '9999'),
     );
   return (
-    <div className="todo-board">
+    <div className="todo-board" ref={board}>
       <div className="todo-summary">
         <span>{active.length.toLocaleString('fa-IR')} کار باقی‌مانده</span>
         <span>{completed.toLocaleString('fa-IR')} انجام‌شده</span>
@@ -238,7 +256,12 @@ export function TodoList({ onFocusTask }: { onFocusTask?: (task: Task) => void }
       )}
       <ul className="todo-list">
         {(expanded ? visible : visible.slice(0, 6)).map((task) => (
-          <li key={task.id} className={task.done ? 'is-done' : ''}>
+          <li
+            key={task.id}
+            data-task-id={task.id}
+            tabIndex={-1}
+            className={task.done ? 'is-done' : ''}
+          >
             <label className="todo-task">
               <input
                 type="checkbox"

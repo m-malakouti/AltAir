@@ -1,4 +1,6 @@
 const paths = {
+  fullscreen: 'M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5',
+  fullscreenExit: 'M3 8h5V3M21 8h-5V3M16 21v-5h5M8 21v-5H3',
   home: 'm3 10 9-7 9 7v11h-7v-7h-4v7H3z',
   work: 'M3 7h18v14H3zM8 7V3h8v4M3 12a25 25 0 0 0 18 0M12 11v4',
   route:

@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Icon } from '@/components/ui/Icon';
+import { GoogleAccountProfile } from './GoogleAccountProfile';
+import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
 import {
   authConfigured,
   AuthError,
@@ -12,6 +14,14 @@ import {
 import { latinDigits, normalizePhone } from '../auth-model';
 import type { Challenge, Profile, ProfileInput, Session } from '../auth-model';
 import { readSession, saveSession, watchSession } from '../auth-storage';
+import {
+  googleAuthConfigured,
+  restoreGoogle,
+  signInGoogle,
+  signOutGoogle,
+  watchGoogle,
+  type GoogleProfile,
+} from '../google-auth';
 
 export function AccountCard() {
   const id = useId();
@@ -29,6 +39,29 @@ export function AccountCard() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
   const [reload, setReload] = useState(0);
+  const [googleUser, setGoogleUser] = useState<GoogleProfile | null>(null);
+  useEffect(() => {
+    let alive = true;
+    let revision = 0;
+    const load = async () => {
+      const current = ++revision;
+      const found = await restoreGoogle();
+      if (alive && current === revision) setGoogleUser(found);
+    };
+    void load().catch(() => {});
+    const refresh = () => {
+      void load().catch(() => {});
+    };
+    window.addEventListener('focus', refresh);
+    const stop = watchGoogle(() => {
+      void load().catch(() => {});
+    });
+    return () => {
+      alive = false;
+      stop();
+      window.removeEventListener('focus', refresh);
+    };
+  }, []);
   const [profile, setProfile] = useState({
     firstName: '',
     lastName: '',
@@ -112,11 +145,13 @@ export function AccountCard() {
   }
   const seconds = Math.max(0, Math.ceil((retryAt - now) / 1000));
   const expired = challenge !== null && Date.parse(challenge.expiresAt) <= now;
-  const label = user
-    ? user.firstName + ' ' + user.lastName
-    : session
-      ? 'تکمیل مشخصات'
-      : 'ورود / ثبت‌نام';
+  const label = googleUser
+    ? googleUser.name
+    : user
+      ? user.firstName + ' ' + user.lastName
+      : session
+        ? 'تکمیل مشخصات'
+        : 'ورود / ثبت‌نام';
   return (
     <div className="account-card">
       <span>{label}</span>
@@ -139,13 +174,15 @@ export function AccountCard() {
       >
         <header>
           <h2 id={id + '-title'}>
-            {step === 'profile'
-              ? 'تکمیل ثبت‌نام'
-              : step === 'code'
-                ? 'تأیید شماره موبایل'
-                : step === 'account'
-                  ? 'حساب کاربری'
-                  : 'ورود / ثبت‌نام'}
+            {googleUser
+              ? 'حساب گوگل'
+              : step === 'profile'
+                ? 'تکمیل ثبت‌نام'
+                : step === 'code'
+                  ? 'تأیید شماره موبایل'
+                  : step === 'account'
+                    ? 'حساب کاربری'
+                    : 'ورود / ثبت‌نام'}
           </h2>
           <button
             className="icon-button"
@@ -156,7 +193,69 @@ export function AccountCard() {
             <Icon name="close" />
           </button>
         </header>
-        {step === 'phone' && (
+        {!session && !googleUser && (
+          <div className="auth-google-section">
+            <button
+              type="button"
+              className="auth-google-button"
+              disabled={busy || !googleAuthConfigured}
+              onClick={() => {
+                void run(async () => {
+                  setGoogleUser(await signInGoogle());
+                  setChallenge(null);
+                  setCode('');
+                });
+              }}
+            >
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 48 48">
+                <path
+                  fill="#4285F4"
+                  d="M43.61 24.46c0-1.36-.12-2.66-.35-3.92H24v7.42h11a9.4 9.4 0 0 1-4.08 6.17v5h6.62c3.88-3.58 6.07-8.85 6.07-14.67Z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M24 44c5.4 0 9.92-1.79 13.54-4.87l-6.62-5A12.3 12.3 0 0 1 24 36.1c-5.3 0-9.8-3.58-11.4-8.4H5.76v5.16A20.45 20.45 0 0 0 24 44Z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M12.6 27.7a12.3 12.3 0 0 1 0-7.4v-5.16H5.76a20 20 0 0 0 0 17.72Z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M24 11.9c2.96 0 5.6 1.02 7.7 3.02l5.77-5.77A19.7 19.7 0 0 0 24 4 20.45 20.45 0 0 0 5.76 15.14l6.84 5.16c1.6-4.82 6.1-8.4 11.4-8.4Z"
+                />
+              </svg>
+              <span>ادامه با Google</span>
+            </button>
+            <p className="helper-text">
+              ورود با حساب گوگل با دسترسی به نام و ایمیل؛ رمزت فقط در صفحهٔ گوگل وارد می‌شود.
+            </p>
+            {!googleAuthConfigured && (
+              <p className="helper-text" role="status">
+                ورود گوگل هنوز فعال نشده است.
+              </p>
+            )}
+          </div>
+        )}
+        {googleUser && (
+          <div className="auth-profile">
+            <GoogleAccountProfile key={googleUser.sub} user={googleUser} />
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                void run(async () => {
+                  await signOutGoogle();
+                  setGoogleUser(null);
+                  setStep('phone');
+                });
+              }}
+            >
+              خروج از حساب گوگل
+            </button>
+          </div>
+        )}
+        {!googleUser && step === 'phone' && (
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -196,7 +295,7 @@ export function AccountCard() {
             </div>
           </form>
         )}
-        {step === 'code' && challenge && (
+        {!googleUser && step === 'code' && challenge && (
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -312,17 +411,11 @@ export function AccountCard() {
               onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
               disabled={busy}
             />
-            <label htmlFor={id + '-birth'}>تاریخ تولد (میلادی)</label>
-            <input
+            <label htmlFor={id + '-birth'}>تاریخ تولد (شمسی)</label>
+            <PersianDatePicker
               id={id + '-birth'}
-              type="date"
-              dir="ltr"
-              autoComplete="bday"
-              required
-              min={new Date(now - 120 * 365.25 * 86400000).toISOString().slice(0, 10)}
-              max={new Date(now).toISOString().slice(0, 10)}
               value={profile.birthDate}
-              onChange={(e) => setProfile({ ...profile, birthDate: e.target.value })}
+              onChange={(birthDate) => setProfile({ ...profile, birthDate })}
               disabled={busy}
             />
             <label htmlFor={id + '-gender'}>جنسیت</label>

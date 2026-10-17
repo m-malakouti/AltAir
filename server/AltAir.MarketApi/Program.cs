@@ -21,6 +21,7 @@ builder.Services.AddHttpClient("navasan", client => client.Timeout = TimeSpan.Fr
 // Navasan authenticates in its URL. Never log provider request URLs.
 builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.None);
 builder.Services.AddSingleton<NavasanService>();
+builder.Services.AddSingleton(new AdminSettingsStore(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "admin-settings.json")));
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<WeatherService>();
 builder.Services.AddHttpClient("weather", client => client.Timeout = TimeSpan.FromSeconds(10))
@@ -50,6 +51,7 @@ builder.Services.AddRateLimiter(options =>
 var app = builder.Build();
 app.UseCors();
 app.UseRateLimiter();
+app.MapAdmin();
 app.MapCommute();
 app.MapGet("/api/market/usd", async (NavasanService service, HttpContext context, IWebHostEnvironment environment, CancellationToken cancellationToken) =>
 {

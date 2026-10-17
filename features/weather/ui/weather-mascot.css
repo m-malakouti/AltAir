@@ -1,0 +1,152 @@
+.weather-mascot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0;
+  direction: rtl;
+}
+.weather-mascot svg {
+  width: 136px;
+  height: 116px;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+.weather-mascot figcaption {
+  max-width: 170px;
+  font-size: 12px;
+  line-height: 1.9;
+  color: inherit;
+  text-align: right;
+  text-wrap: pretty;
+}
+.weather-mascot-name {
+  display: block;
+  font-size: 10px;
+  opacity: 0.6;
+  margin-bottom: 3px;
+}
+.mascot-body {
+  animation: mascot-breathe 3s ease-in-out infinite;
+  transform-origin: 100px 145px;
+}
+.mascot-eyes {
+  animation: mascot-blink 6s infinite;
+  transform-origin: 100px 87px;
+}
+.weather-mascot--snow .mascot-body {
+  animation: mascot-shiver 0.24s linear infinite;
+}
+.weather-mascot--storm .mascot-body {
+  animation: mascot-startle 4s ease-in-out infinite;
+}
+.mascot-umbrella {
+  animation: mascot-umbrella 2s ease-in-out infinite alternate;
+  transform-origin: 151px 106px;
+}
+.mascot-rain,
+.mascot-drip {
+  animation: mascot-rain 1.3s linear infinite;
+}
+.mascot-snow {
+  animation: mascot-snow 3s linear infinite;
+}
+.mascot-sun,
+.mascot-sleep,
+.mascot-cloud,
+.mascot-mist {
+  animation: mascot-float 4s ease-in-out infinite alternate;
+}
+.weather-mascot--paused * {
+  animation-play-state: paused !important;
+}
+.weather-card--compact .weather-mascot {
+  max-width: 290px;
+  margin: 2px 0 0 auto;
+  color: #ecf5ff;
+  text-shadow: 0 2px 8px #152438;
+}
+.weather-card--compact .weather-mascot svg {
+  width: 125px;
+  height: 106px;
+}
+@keyframes mascot-breathe {
+  50% {
+    transform: translateY(-3px) rotate(-2deg);
+  }
+}
+@keyframes mascot-blink {
+  0%,
+  43%,
+  47%,
+  100% {
+    transform: scaleY(1);
+  }
+  45% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes mascot-shiver {
+  25% {
+    transform: translateX(-1px) rotate(-1deg);
+  }
+  75% {
+    transform: translateX(1px) rotate(1deg);
+  }
+}
+@keyframes mascot-startle {
+  15%,
+  24% {
+    transform: translateY(0);
+  }
+  19% {
+    transform: translateY(-7px);
+  }
+}
+@keyframes mascot-umbrella {
+  to {
+    transform: rotate(12deg);
+  }
+}
+@keyframes mascot-rain {
+  from {
+    opacity: 0;
+    transform: translate(3px, -8px);
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate(-3px, 22px);
+  }
+}
+@keyframes mascot-snow {
+  from {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate(10px, 95px);
+  }
+}
+@keyframes mascot-float {
+  to {
+    transform: translate(-5px, 3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .weather-mascot * {
+    animation: none !important;
+  }
+}
+@media (max-width: 440px) {
+  .weather-mascot svg {
+    width: 110px;
+    height: 94px;
+  }
+}

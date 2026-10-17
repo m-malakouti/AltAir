@@ -162,9 +162,8 @@ New Tab groups Google search and bookmarks on the first slide and home/work
 commuting on the second. Icon tabs, arrow/Home/End keys and touch control a
 responsive slider with automatic content height and reduced-motion support.
 Home/work addresses stay in local browser storage. The second slide now uses
-Neshan: a bundled, lazy-loaded OpenLayers map for drawing the route and picking
-home/work, plus a server connection for traffic-aware ETA. These stay inactive
-until the corresponding web-map and service keys are configured. Existing saved
-addresses are preserved. The outdated SDK traffic overlay is disabled; live trip
-duration comes from the routing API.
+Google Maps Embed API for displaying driving directions, distance and travel time
+inside Google's map. Set `WXT_GOOGLE_MAPS_EMBED_KEY` and rebuild to activate it.
+Existing saved addresses are preserved. The map loads only on the active slide;
+this mode does not select coordinates into the form or call the Neshan backend.
 See [commute setup and behavior](docs/commute.md).

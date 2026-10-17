@@ -13,6 +13,7 @@ import { parseCity, parseWeather, weatherDescription } from '../weather-model';
 import type { WeatherCity, WeatherNow } from '../weather-model';
 import { searchCities, fetchWeather, weatherConfigured } from '../weather-client';
 import { WeatherDateCard } from './WeatherDateCard';
+import { AnimatedWeather } from './AnimatedWeather';
 
 export function WeatherCard({
   selectedDate = null,
@@ -36,6 +37,7 @@ export function WeatherCard({
   const [result, setResult] = useState<{ key: string; weather: WeatherNow } | null>(null);
   const [tick, setTick] = useState(0);
   const [now, setNow] = useState(Date.now);
+  const [effectsPaused, setEffectsPaused] = useState(false);
   const searchAbort = useRef<AbortController | null>(null);
   const compactButton = useRef<HTMLButtonElement>(null);
   const key = city ? `${city.latitude},${city.longitude}` : '';
@@ -205,7 +207,12 @@ export function WeatherCard({
           onClick={() => setChoosing((value) => !value)}
         >
           <span className="ambient-weather-temperature" dir="ltr">
-            <span aria-hidden="true">{condition?.symbol ?? '◌'}</span>
+            <AnimatedWeather
+              code={weather?.code ?? -1}
+              isDay={weather?.isDay ?? true}
+              paused={effectsPaused || Boolean(stale)}
+              atmosphere={Boolean(weather) && !stale}
+            />
             <strong>{weather ? `${Math.round(weather.temperature)}°` : loading ? '…' : '—'}</strong>
             {stale && (
               <small className="ambient-weather-stale" aria-hidden="true">
@@ -216,6 +223,18 @@ export function WeatherCard({
           <span className="ambient-weather-city">
             {city?.name ?? (ready ? 'انتخاب شهر' : 'در حال خواندن…')}
           </span>
+        </button>
+      )}
+      {weather && !selectedDate && (
+        <button
+          type="button"
+          className="ambient-effects-toggle"
+          aria-pressed={!effectsPaused}
+          title={effectsPaused ? 'پخش جلوه‌های آب‌وهوا' : 'توقف جلوه‌های آب‌وهوا'}
+          aria-label={effectsPaused ? 'پخش جلوه‌های آب‌وهوا' : 'توقف جلوه‌های آب‌وهوا'}
+          onClick={() => setEffectsPaused((value) => !value)}
+        >
+          <Icon name={effectsPaused ? 'play' : 'pause'} />
         </button>
       )}
       {compact && weatherError && !weather && (

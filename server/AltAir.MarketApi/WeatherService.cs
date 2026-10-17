@@ -16,7 +16,7 @@ public sealed class WeatherService(IHttpClientFactory clients, IMemoryCache cach
     {
         var key = "weather-city:" + name;
         if (cache.TryGetValue<WeatherCity[]>(key, out var saved) && saved is not null) return saved;
-        using var response = await clients.CreateClient("weather").GetAsync(
+        using var response = await GetAsync(
             "https://geocoding-api.open-meteo.com/v1/search?count=6&language=fa&format=json&name=" + Uri.EscapeDataString(name), token);
         response.EnsureSuccessStatusCode();
         using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(token));
@@ -35,6 +35,24 @@ public sealed class WeatherService(IHttpClientFactory clients, IMemoryCache cach
         cache.Set(key, cities, TimeSpan.FromMinutes(30));
         return cities;
     }
+    // A brief upstream overload must not immediately blank the weather card.
+    // Retry only once and stay inside the frontend's 12-second request deadline.
+    private async Task<HttpResponseMessage> GetAsync(string url, CancellationToken token)
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+        deadline.CancelAfter(TimeSpan.FromSeconds(10));
+        var client = clients.CreateClient("weather");
+        var response = await client.GetAsync(url, deadline.Token);
+        if (response.StatusCode is not (System.Net.HttpStatusCode.ServiceUnavailable
+            or System.Net.HttpStatusCode.BadGateway or System.Net.HttpStatusCode.GatewayTimeout
+            or System.Net.HttpStatusCode.TooManyRequests)) return response;
+        var retryAfter = response.Headers.RetryAfter;
+        var delay = retryAfter?.Delta ?? (retryAfter?.Date - clock.GetUtcNow()) ?? TimeSpan.FromMilliseconds(500);
+        if (delay > TimeSpan.FromSeconds(2)) return response;
+        response.Dispose();
+        if (delay > TimeSpan.Zero) await Task.Delay(delay, deadline.Token);
+        return await client.GetAsync(url, deadline.Token);
+    }
     public static bool ValidCoordinates(double latitude, double longitude) =>
         double.IsFinite(latitude) && double.IsFinite(longitude) && latitude is >= -90 and <= 90 && longitude is >= -180 and <= 180;
     public async Task<WeatherDay> DayAsync(double latitude, double longitude, DateOnly date, CancellationToken token)
@@ -49,7 +67,7 @@ public sealed class WeatherService(IHttpClientFactory clients, IMemoryCache cach
             var archive = date < today.AddDays(-5);
             var host = archive ? "https://archive-api.open-meteo.com/v1/archive" : "https://api.open-meteo.com/v1/forecast";
             var url = FormattableString.Invariant($"{host}?latitude={latitude:F4}&longitude={longitude:F4}&start_date={date:yyyy-MM-dd}&end_date={date:yyyy-MM-dd}&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,weather_code&temperature_unit=celsius&timeformat=unixtime&timezone=auto");
-            using var response = await clients.CreateClient("weather").GetAsync(url,token);
+            using var response = await GetAsync(url,token);
             response.EnsureSuccessStatusCode();
             var result = WeatherDayParser.Parse(await response.Content.ReadAsStringAsync(token),date,clock.GetUtcNow(), date < today);
             cache.Set(key,result,TimeSpan.FromMinutes(15));
@@ -65,7 +83,7 @@ public sealed class WeatherService(IHttpClientFactory clients, IMemoryCache cach
         try {
             if (cache.TryGetValue<WeatherNow>(key, out var saved) && saved is not null) return saved;
             var url = FormattableString.Invariant($"https://api.open-meteo.com/v1/forecast?latitude={latitude:F4}&longitude={longitude:F4}&current=temperature_2m,weather_code,is_day&hourly=temperature_2m,weather_code,is_day,precipitation_probability&forecast_hours=25&temperature_unit=celsius&timeformat=unixtime&timezone=auto");
-            using var response = await clients.CreateClient("weather").GetAsync(url, token);
+            using var response = await GetAsync(url, token);
             response.EnsureSuccessStatusCode();
             var weather = Parse(await response.Content.ReadAsStringAsync(token), clock.GetUtcNow());
             cache.Set(key, weather, TimeSpan.FromMinutes(15));

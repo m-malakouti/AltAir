@@ -1,0 +1,314 @@
+.search-companion-stage {
+  display: grid;
+  grid-template-columns: clamp(72px, 18%, 160px) minmax(0, 1fr);
+  align-items: end;
+  gap: 12px;
+  direction: ltr;
+  min-height: 222px;
+  padding: 0 6px 8px;
+}
+.search-companion-stage .google-logo {
+  width: 100%;
+  max-width: 160px;
+  height: auto;
+  margin: 0 0 16px;
+  display: block;
+}
+.search-companion-stage .google-logo img {
+  width: 100%;
+  height: auto;
+}
+.puffy-companion {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 214px;
+  --travel: clamp(0px, 10vw, 100px);
+}
+.puffy-actor {
+  position: absolute;
+  bottom: 0;
+  left: clamp(0px, calc(50% - 130px), calc(100% - 220px));
+  width: min(220px, 100%);
+  height: 204px;
+}
+.puffy-interact {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.puffy-interact:focus-visible,
+.puffy-ball:focus-visible,
+.puffy-reminder button:focus-visible {
+  outline: 2px solid var(--color-ring, #80cce7);
+  outline-offset: 3px;
+}
+.puffy-interact .weather-mascot {
+  flex-direction: column-reverse;
+  gap: 0;
+  margin: 0;
+}
+.puffy-interact .weather-mascot svg {
+  width: 140px;
+  height: 119px;
+  overflow: visible;
+}
+.puffy-interact figcaption {
+  height: 66px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 220px;
+  padding: 6px 10px;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.7;
+}
+.puffy-interact .weather-mascot-name {
+  display: none;
+}
+.puffy-ball {
+  position: absolute;
+  bottom: 7px;
+  left: calc(50% + 30px);
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transform-origin: center;
+}
+.puffy-ball svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 3px 2px #12253940);
+}
+.puffy-scene--hello .mascot-body {
+  animation: puffy-wave 1.2s ease-in-out 3;
+}
+.puffy-scene--rest .mascot-body,
+.puffy-scene--sleep .mascot-body {
+  transform: translateY(9px) scaleY(0.9);
+  animation: puffy-rest 5s ease-in-out infinite;
+}
+.puffy-scene--prepare .puffy-ball {
+  animation: puffy-lift 2s ease-in both;
+}
+.puffy-scene--juggle .puffy-ball {
+  animation: puffy-juggle 1.2s cubic-bezier(0.36, 0, 0.66, 1) 5;
+}
+.puffy-scene--juggle .mascot-body {
+  animation: puffy-kick 1.2s ease-in-out 5;
+}
+.puffy-scene--juggle .mascot-eyes {
+  animation: puffy-watch 1.2s ease-in-out 5;
+}
+.puffy-scene--miss .puffy-ball {
+  animation: puffy-miss 1.5s ease-in both;
+}
+.puffy-scene--chase .puffy-ball {
+  transform: translateX(var(--travel));
+}
+.puffy-scene--chase .puffy-interact {
+  animation: puffy-fetch 2.5s ease-in-out both;
+}
+.puffy-scene--chase .mascot-body {
+  animation: puffy-step 0.3s ease-in-out infinite;
+}
+.puffy-scene--proud .mascot-body,
+.puffy-scene--celebrate .mascot-body {
+  animation: puffy-cheer 0.8s ease-in-out 3;
+}
+.puffy-scene--celebrate .puffy-ball {
+  animation: puffy-juggle 1s ease-in-out 3;
+}
+.puffy-scene--love .mascot-body {
+  animation: puffy-wave 1.5s ease-in-out 2;
+}
+.puffy-scene--hug .puffy-ball {
+  transform: translate(-32px, -36px);
+}
+.puffy-scene--hug .mascot-body {
+  animation: puffy-rest 3s ease-in-out infinite;
+}
+.puffy-snowball .puffy-ball path {
+  fill: #d9effa;
+  stroke: #d9effa;
+}
+.puffy-snowball.puffy-scene--miss .puffy-ball {
+  opacity: 0.5;
+}
+.puffy-reminder {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--color-surface-solid);
+  border: 1px solid var(--color-border);
+  direction: rtl;
+  font-size: 11px;
+}
+.puffy-reminder span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.puffy-reminder button {
+  margin: 5px 0 0 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: inherit;
+  background: var(--color-surface-soft);
+  cursor: pointer;
+  font: inherit;
+}
+.puffy-companion--inactive * {
+  animation-play-state: paused !important;
+}
+@keyframes puffy-wave {
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg) translateY(-3px);
+  }
+}
+@keyframes puffy-rest {
+  50% {
+    transform: translateY(10px) scaleY(0.92);
+  }
+}
+@keyframes puffy-lift {
+  0%,
+  40% {
+    transform: translate(0, 0);
+  }
+  70% {
+    transform: translate(-18px, -24px) rotate(-50deg);
+  }
+  100% {
+    transform: translate(-15px, -3px);
+  }
+}
+@keyframes puffy-juggle {
+  0%,
+  100% {
+    transform: translate(-15px, -3px) rotate(0);
+  }
+  50% {
+    transform: translate(-22px, -76px) rotate(180deg);
+  }
+}
+@keyframes puffy-kick {
+  0%,
+  100% {
+    transform: rotate(-6deg) translateY(-2px);
+  }
+  45% {
+    transform: rotate(2deg);
+  }
+}
+@keyframes puffy-watch {
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes puffy-miss {
+  0% {
+    transform: translate(-15px, -3px);
+  }
+  35% {
+    transform: translate(-28px, -102px);
+  }
+  60% {
+    transform: translate(5px, -60px);
+  }
+  100% {
+    transform: translate(var(--travel), 0) rotate(270deg);
+  }
+}
+@keyframes puffy-fetch {
+  0% {
+    transform: translateX(0);
+  }
+  45%,
+  65% {
+    transform: translateX(var(--travel));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+@keyframes puffy-step {
+  50% {
+    transform: translateY(-4px) rotate(4deg);
+  }
+}
+@keyframes puffy-cheer {
+  50% {
+    transform: translateY(-10px) rotate(-3deg);
+  }
+}
+@media (max-width: 540px) {
+  .search-companion-stage {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 6px;
+  }
+  .puffy-companion {
+    --travel: 12px;
+  }
+  .puffy-actor {
+    left: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .puffy-companion * {
+    animation: none !important;
+  }
+}
+.puffy-scene--juggle .mascot-kicking-foot {
+  transform-origin: 114px 137px;
+  animation: puffy-foot 1.2s ease-in-out 5;
+}
+@keyframes puffy-foot {
+  0%,
+  100% {
+    transform: rotate(-32deg);
+  }
+  40%,
+  70% {
+    transform: rotate(0);
+  }
+}
+.puffy-scene--chase .puffy-ball {
+  animation: puffy-retrieve 2.5s ease-in-out both;
+}
+@keyframes puffy-retrieve {
+  0%,
+  55% {
+    transform: translateX(var(--travel));
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .puffy-companion * {
+    animation: none !important;
+  }
+}

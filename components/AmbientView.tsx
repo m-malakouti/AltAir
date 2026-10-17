@@ -4,6 +4,16 @@ import { CountUpTime } from './CountUpTime';
 import { OfflineScene } from './OfflineScene';
 import { useConnectivity } from '@/features/workspace/use-connectivity';
 import type { ConnectionSnapshot } from '@/lib/browser/connectivity';
+import { holidayFor, persianDay } from '@/features/calendar/calendar-model';
+import { AmbientFullscreen } from './AmbientFullscreen';
+
+const calendarDate = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+  timeZone: 'Asia/Tehran',
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
 
 const clock = new Intl.DateTimeFormat('en-GB', {
   numberingSystem: 'latn',
@@ -26,6 +36,7 @@ export function AmbientSurface({
   const [now, setNow] = useState(() => new Date());
   const offline = connection.status !== 'online';
   const photo = getAmbientPhoto(now.getTime());
+  const occasion = holidayFor(persianDay(now));
   useEffect(() => {
     const update = () => setNow(new Date());
     const timer = window.setInterval(update, 1000);
@@ -50,6 +61,7 @@ export function AmbientSurface({
       <div className="ambient-brand" lang="en" dir="ltr">
         AltAir<span>360</span>
       </div>
+      <AmbientFullscreen />
       <div className="ambient-center">
         <div className="ambient-clock-content">
           <time
@@ -60,6 +72,12 @@ export function AmbientSurface({
           >
             <CountUpTime value={clock.format(now)} />
           </time>
+          <div className="ambient-date-row" dir="rtl">
+            <time className="ambient-date" dateTime={now.toISOString()}>
+              {calendarDate.format(now)}
+            </time>
+            {occasion && <span className="ambient-occasion">{occasion}</span>}
+          </div>
         </div>
         {offline && (
           <OfflineScene

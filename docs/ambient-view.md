@@ -93,3 +93,22 @@ bookmarks, city, workspace contents or user identifiers are sent in these checks
   matches the current detailed report. Check offline/stale and no-city states.
 - Reload the installed extension for final Chrome/Edge acceptance; localhost
   preview does not exercise extension storage or privileged browser APIs.
+
+## Fullscreen and animated weather
+
+Ambient view includes a fullscreen control next to the workspace toggle. It requests
+fullscreen for the document so the weather and return control remain visible, follows
+browser fullscreenchange events, reports denied requests, and exits owned fullscreen
+when leaving ambient view. Escape is reserved for browser fullscreen exit while active.
+
+The compact weather summary uses local animated SVG art: rotating sun for clear days,
+moon for clear nights, drifting clouds, rain, snow, fog and a gently glowing storm bolt.
+Fresh reports can also add lightweight CSS precipitation across the background, a warm
+sun glow or drifting fog. Stale reports retain a static icon and suppress atmospheric
+effects. No extra weather requests, remote assets, sounds or fullscreen flashes are added.
+
+The pause control stops all weather animations. System prefers-reduced-motion disables
+animation and hides falling particles. Effects use pointer-events:none and cannot block
+clock, city selection or other controls. Fullscreen and weather mappings have automated
+tests; local browser preview verified fullscreen entry/exit and snow/rain/sun rendering.
+Live weather still depends on the existing city, API configuration and report availability.

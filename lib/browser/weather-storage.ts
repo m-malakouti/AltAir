@@ -13,23 +13,36 @@ async function read(key: string): Promise<unknown> {
 }
 async function write(key: string, value: unknown): Promise<void> {
   if (extension()) await browser.storage.local.set({ [key]: value });
-  else localStorage.setItem(key, JSON.stringify(value));
+  else {
+    localStorage.setItem(key, JSON.stringify(value));
+    window.dispatchEvent(new Event(key));
+  }
 }
 export const readWeatherCity = () => read(CITY);
 export const saveWeatherCity = (city: unknown) => write(CITY, city);
 export const readWeatherCache = () => read(CACHE);
 export const saveWeatherCache = (value: unknown) => write(CACHE, value);
 export function watchWeatherCity(callback: () => void): () => void {
+  return watchWeatherKey(CITY, callback);
+}
+export function watchWeatherCache(callback: () => void): () => void {
+  return watchWeatherKey(CACHE, callback);
+}
+function watchWeatherKey(key: string, callback: () => void): () => void {
   if (extension()) {
     const listener = (changes: Record<string, unknown>, area: string) => {
-      if (area === 'local' && CITY in changes) callback();
+      if (area === 'local' && key in changes) callback();
     };
     browser.storage.onChanged.addListener(listener);
     return () => browser.storage.onChanged.removeListener(listener);
   }
   const listener = (event: StorageEvent) => {
-    if (event.key === CITY || event.key === null) callback();
+    if (event.key === key || event.key === null) callback();
   };
   window.addEventListener('storage', listener);
-  return () => window.removeEventListener('storage', listener);
+  window.addEventListener(key, callback);
+  return () => {
+    window.removeEventListener('storage', listener);
+    window.removeEventListener(key, callback);
+  };
 }
