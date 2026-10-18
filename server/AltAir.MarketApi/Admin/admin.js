@@ -22,6 +22,32 @@ async function overview() {
   finally { $('refresh').disabled = false; }
 }
 $('refresh').addEventListener('click', overview);
+async function loadUsers() {
+  try {
+    const data = await request('/admin/api/users');
+    const rows = data.users.map(user => {
+      const row = document.createElement('tr');
+      for (const text of [ `${user.firstName} ${user.lastName}`, user.phone,
+        user.active ? 'فعال در پنج دقیقهٔ اخیر' : 'فعالیت اخیر ثبت نشده',
+        user.lastSeenAt ? new Date(user.lastSeenAt).toLocaleString('fa-IR') : 'ثبت نشده' ]) {
+        const cell = document.createElement('td');
+        cell.textContent = text;
+        row.append(cell);
+      }
+      return row;
+    });
+    $('users-body').replaceChildren(...rows);
+    $('user-count').textContent = `${data.total.toLocaleString('fa-IR')} ثبت‌نام · ${data.active.toLocaleString('fa-IR')} فعال`;
+    $('users-status').textContent = data.total ? `به‌روزرسانی: ${new Date(data.checkedAt).toLocaleTimeString('fa-IR')}` : 'هنوز حساب موبایلی در این سرور ثبت نشده است.';
+  } catch {
+    $('users-body').replaceChildren();
+    $('user-count').textContent = 'دریافت ناموفق';
+    $('users-status').textContent = 'خواندن کاربران انجام نشد؛ دوباره تازه‌سازی کنید.';
+  }
+}
+$('refresh').addEventListener('click', loadUsers);
+setInterval(() => { if (document.visibilityState === 'visible') void loadUsers(); }, 60_000);
+void loadUsers();
 const probes = { health:'/health', market:'/api/market/usd', weather:'/api/weather/current?latitude=35.6892&longitude=51.3890' };
 for (const button of document.querySelectorAll('[data-probe]')) button.addEventListener('click', async () => {
   const name = button.dataset.probe;

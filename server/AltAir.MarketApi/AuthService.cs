@@ -38,7 +38,10 @@ public sealed class ProfileStore
 public sealed class AuthService(TimeProvider clock, ProfileStore store)
 {
     private sealed record Challenge(string Phone, byte[] Hash, DateTimeOffset ExpiresAt) { public int Attempts { get; set; } }
-    private sealed record Session(string Phone, DateTimeOffset ExpiresAt);
+    private sealed record Session(string Phone, DateTimeOffset ExpiresAt)
+    {
+        public DateTimeOffset? LastSeenAt { get; set; }
+    }
     private sealed record Window(DateTimeOffset Start) { public int Count { get; set; } public DateTimeOffset Last { get; set; } }
     private readonly object gate = new();
     private readonly Dictionary<string, Challenge> challenges = [];
@@ -115,7 +118,28 @@ public sealed class AuthService(TimeProvider clock, ProfileStore store)
     }
     public UserProfile? Me(string? token)
     {
-        lock (gate) return store.Read().GetValueOrDefault(Authorized(token).Phone);
+        lock (gate)
+        {
+            var session = Authorized(token);
+            var user = store.Read().GetValueOrDefault(session.Phone);
+            session.LastSeenAt = clock.GetUtcNow();
+            return user;
+        }
+    }
+    public object AdminUsers()
+    {
+        lock (gate)
+        {
+            var now = clock.GetUtcNow();
+            var users = store.Read().Values.Select(user =>
+            {
+                var lastSeen = sessions.Values.Where(s => s.Phone == user.Phone && s.ExpiresAt > now)
+                    .Select(s => s.LastSeenAt).Max();
+                return new { user.Id, user.FirstName, user.LastName, user.Phone,
+                    lastSeenAt = lastSeen, active = lastSeen.HasValue && lastSeen.Value > now.AddMinutes(-5) };
+            }).OrderBy(user => user.LastName).ThenBy(user => user.FirstName).ToArray();
+            return new { users, total = users.Length, active = users.Count(user => user.active), checkedAt = now };
+        }
     }
     public UserProfile Complete(string? token, ProfileInput input)
     {
@@ -133,6 +157,7 @@ public sealed class AuthService(TimeProvider clock, ProfileStore store)
             var user = new UserProfile(Guid.NewGuid().ToString(), session.Phone, first, last, birth.ToString("yyyy-MM-dd"), input.Gender);
             profiles.Add(session.Phone, user);
             store.Write(profiles);
+            session.LastSeenAt = clock.GetUtcNow();
             return user;
         }
     }

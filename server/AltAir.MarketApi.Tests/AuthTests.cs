@@ -29,6 +29,23 @@ public sealed class AuthTests : IDisposable
     [InlineData("123")] [InlineData("+12025550123")] [InlineData("02112345678")]
     public void InvalidPhone(string phone) => Assert.Throws<AuthFailure>(() => service.Request(phone));
     [Fact]
+    public void AdminActivityExpiresAndLogoutKeepsRegisteredAccount()
+    {
+        var session = SignIn();
+        service.Complete(session.Token, Profile());
+        System.Text.Json.JsonElement Snapshot() => System.Text.Json.JsonSerializer.SerializeToElement(service.AdminUsers());
+        Assert.Equal(1, Snapshot().GetProperty("active").GetInt32());
+        clock.Now = clock.Now.AddMinutes(6);
+        Assert.Equal(0, Snapshot().GetProperty("active").GetInt32());
+        service.Me(session.Token);
+        Assert.Equal(1, Snapshot().GetProperty("active").GetInt32());
+        service.Logout(session.Token);
+        var result = Snapshot();
+        Assert.Equal(1, result.GetProperty("total").GetInt32());
+        Assert.Equal(0, result.GetProperty("active").GetInt32());
+        Assert.DoesNotContain(session.Token, result.ToString());
+    }
+    [Fact]
     public void RegistrationPersistsEncryptedAndLoginReturnsSameAccount()
     {
         var session = SignIn();

@@ -8,5 +8,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Admin/**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../../public/fonts/vazirmatn/*" Link="Admin/fonts/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

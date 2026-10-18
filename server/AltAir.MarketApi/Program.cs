@@ -10,6 +10,7 @@ builder.Services.AddSingleton<CommuteService>();
 builder.Services.AddHttpClient("commute", client => client.Timeout = TimeSpan.FromSeconds(8))
     .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton(new AdStore(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "ads")));
 var authDirectory = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "auth");
 var protection = builder.Services.AddDataProtection().SetApplicationName("AltAir.LocalAuth")
     .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(authDirectory, "keys")));
@@ -52,6 +53,7 @@ var app = builder.Build();
 app.UseCors();
 app.UseRateLimiter();
 app.MapAdmin();
+app.MapAds();
 app.MapCommute();
 app.MapGet("/api/market/usd", async (NavasanService service, HttpContext context, IWebHostEnvironment environment, CancellationToken cancellationToken) =>
 {

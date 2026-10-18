@@ -3,7 +3,7 @@ import { BookmarkManager } from '@/features/bookmarks/ui/BookmarkManager';
 import { CommuteCard } from '@/features/commute/ui/CommuteCard';
 import { SavedCommuteCard } from '@/features/commute/ui/SavedCommuteCard';
 import { GoogleLogo } from './GoogleLogo';
-import { PuffyCompanion } from './PuffyCompanion';
+import { PuffyHabitat } from './PuffyHabitat';
 import { WebSearch } from './WebSearch';
 import { Icon } from './ui/Icon';
 import { ActionButton } from './ui/ActionButton';
@@ -13,7 +13,7 @@ const slides = [
   { label: 'رفت‌وآمد من', icon: 'route' },
 ] as const;
 
-export function WorkspaceCarousel() {
+export function WorkspaceCarousel({ companionActive = true }: { companionActive?: boolean }) {
   const [active, setActive] = useState(0);
   const [height, setHeight] = useState<number>();
   const panels = useRef<(HTMLDivElement | null)[]>([]);
@@ -136,7 +136,7 @@ export function WorkspaceCarousel() {
                   <section className="sketch-search" aria-label="جست‌وجو در گوگل">
                     <div className="search-companion-stage">
                       <GoogleLogo />
-                      <PuffyCompanion active={active === 0} />
+                      <PuffyHabitat active={companionActive && active === 0} />
                     </div>
                     <WebSearch />
                   </section>

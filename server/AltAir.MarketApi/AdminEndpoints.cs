@@ -17,6 +17,7 @@ public static class AdminEndpoints
     public static void MapAdmin(this WebApplication app)
     {
         var routes = app.MapGroup("/admin");
+        routes.MapAdAdmin();
         routes.AddEndpointFilter(async (context, next) =>
         {
             var http = context.HttpContext;
@@ -29,8 +30,10 @@ public static class AdminEndpoints
             catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
             { return Results.Json(new { code = "admin_storage_unavailable" }, statusCode: 503); }
         });
-        foreach (var (route, file, mime) in new[] { ("/", "index.html", "text/html"), ("/admin.js", "admin.js", "text/javascript"), ("/admin.css", "admin.css", "text/css") })
+        foreach (var (route, file, mime) in new[] { ("/", "index.html", "text/html"), ("/admin.js", "admin.js", "text/javascript"), ("/ads.js", "ads.js", "text/javascript"), ("/admin.css", "admin.css", "text/css") })
             routes.MapGet(route, () => Results.File(Path.Combine(app.Environment.ContentRootPath, "Admin", file), mime));
+        routes.MapGet("/fonts/Vazirmatn-Variable.woff2", () => Results.File(
+            Path.Combine(AppContext.BaseDirectory, "Admin", "fonts", "Vazirmatn-Variable.woff2"), "font/woff2"));
         routes.MapGet("/api/overview", async (IOptions<NavasanOptions> options, IConfiguration config, AdminSettingsStore store, CancellationToken token) =>
         {
             var n = options.Value;
@@ -49,5 +52,6 @@ public static class AdminEndpoints
             await store.SaveAsync(settings, token);
             return Results.Ok(new { saved = true, settings });
         }).RequireRateLimiting("auth");
+        routes.MapGet("/api/users", (AuthService auth) => Results.Ok(auth.AdminUsers()));
     }
 }

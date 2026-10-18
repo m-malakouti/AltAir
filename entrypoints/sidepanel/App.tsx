@@ -7,6 +7,7 @@ import { WorkspaceShell } from '@/components/WorkspaceShell';
 import { AppearanceCard } from '@/components/AppearanceCard';
 import { Button } from '@/components/ui/Button';
 import { FocusClock } from '@/features/focus/ui/FocusClock';
+import { SponsoredAds, SponsoredAdsProvider } from '@/features/ads/ui/SponsoredAds';
 import {
   getViewMode,
   initializeViewMode,
@@ -42,74 +43,77 @@ export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab
     return () => document.removeEventListener('keydown', escape);
   }, [ambient]);
   return (
-    <WorkspaceShell
-      surface={surface}
-      ambient={ambient}
-      navigation={
-        <nav className="workspace-navigation" aria-label="بخش‌های فضای کار">
-          <Button
-            variant="ghost"
-            aria-label="فضای کار"
-            title="فضای کار"
-            aria-pressed={view === 'workspace'}
-            onClick={() => setView('workspace')}
-          >
-            <Icon name="grid" />
-          </Button>
-          <Button
-            variant="ghost"
-            aria-label="تنظیمات"
-            title="تنظیمات"
-            aria-pressed={view === 'appearance'}
-            onClick={() => setView('appearance')}
-          >
-            <Icon name="settings" />
-          </Button>
-        </nav>
-      }
-    >
-      {surface === 'newtab' && (
-        <>
-          <button
-            ref={modeButton}
-            type="button"
-            className="workspace-mode-toggle"
-            aria-pressed={ambient}
-            aria-label={ambient ? 'بازگشت به میزکار' : 'نمای آرام'}
-            title={ambient ? 'بازگشت به میزکار (Escape)' : 'نمای آرام؛ ساعت و پس‌زمینه'}
-            onClick={() => {
-              setViewMode(ambient ? 'workspace' : 'ambient');
-              setView('workspace');
-              window.scrollTo({ top: 0 });
-            }}
-          >
-            <Icon name={ambient ? 'grid' : 'moon'} />
-            <span>{ambient ? 'بازگشت به میزکار' : 'نمای آرام'}</span>
-          </button>
-          {preference.error && (
-            <button
-              className="workspace-mode-error"
-              type="button"
-              role="status"
-              onClick={() => setViewMode(preference.mode)}
+    <SponsoredAdsProvider active={!ambient && view === 'workspace'}>
+      <WorkspaceShell
+        surface={surface}
+        ambient={ambient}
+        navigation={
+          <nav className="workspace-navigation" aria-label="بخش‌های فضای کار">
+            <Button
+              variant="ghost"
+              aria-label="فضای کار"
+              title="فضای کار"
+              aria-pressed={view === 'workspace'}
+              onClick={() => setView('workspace')}
             >
-              {preference.error}
-            </button>
-          )}
-        </>
-      )}
-      <div className="workspace-view" hidden={view !== 'workspace' && !ambient}>
-        {surface === 'newtab' ? (
-          <SketchWorkspace ambient={ambient} />
-        ) : (
+              <Icon name="grid" />
+            </Button>
+            <Button
+              variant="ghost"
+              aria-label="تنظیمات"
+              title="تنظیمات"
+              aria-pressed={view === 'appearance'}
+              onClick={() => setView('appearance')}
+            >
+              <Icon name="settings" />
+            </Button>
+          </nav>
+        }
+      >
+        {surface === 'newtab' && (
           <>
-            <FocusClock />
-            <WebSearch />
-            <WorkspaceSegments />
+            <button
+              ref={modeButton}
+              type="button"
+              className="workspace-mode-toggle"
+              aria-pressed={ambient}
+              aria-label={ambient ? 'بازگشت به میزکار' : 'نمای آرام'}
+              title={ambient ? 'بازگشت به میزکار (Escape)' : 'نمای آرام؛ ساعت و پس‌زمینه'}
+              onClick={() => {
+                setViewMode(ambient ? 'workspace' : 'ambient');
+                setView('workspace');
+                window.scrollTo({ top: 0 });
+              }}
+            >
+              <Icon name={ambient ? 'grid' : 'moon'} />
+              <span>{ambient ? 'بازگشت به میزکار' : 'نمای آرام'}</span>
+            </button>
+            {preference.error && (
+              <button
+                className="workspace-mode-error"
+                type="button"
+                role="status"
+                onClick={() => setViewMode(preference.mode)}
+              >
+                {preference.error}
+              </button>
+            )}
           </>
         )}
-      </div>
-      {view === 'appearance' && !ambient && <AppearanceCard />}
-    </WorkspaceShell>
+        <div className="workspace-view" hidden={view !== 'workspace' && !ambient}>
+          {surface === 'newtab' ? (
+            <SketchWorkspace ambient={ambient} active={view === 'workspace'} />
+          ) : (
+            <>
+              <FocusClock />
+              <WebSearch />
+              <WorkspaceSegments />
+              <SponsoredAds placement="sidebar" />
+            </>
+          )}
+        </div>
+        {view === 'appearance' && !ambient && <AppearanceCard />}
+      </WorkspaceShell>
+    </SponsoredAdsProvider>
   );
 }

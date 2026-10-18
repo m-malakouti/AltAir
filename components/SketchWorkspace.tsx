@@ -11,6 +11,7 @@ import { TodoList } from './TodoList';
 import { LiveScores } from './LiveScores';
 import { CastboxCard } from './CastboxCard';
 import { AmbientView } from './AmbientView';
+import { SponsoredAds } from '@/features/ads/ui/SponsoredAds';
 function Slot({ area, title, children }: { area: string; title: string; children: ReactNode }) {
   return (
     <section className={`sketch-card sketch-${area}`} aria-label={title}>
@@ -21,19 +22,13 @@ function Slot({ area, title, children }: { area: string; title: string; children
     </section>
   );
 }
-function Placeholder({ lines = 3 }: { lines?: number }) {
-  return (
-    <div className="sketch-placeholder">
-      <span>به‌زودی</span>
-      <div aria-hidden="true">
-        {Array.from({ length: lines }, (_, i) => (
-          <i key={i} />
-        ))}
-      </div>
-    </div>
-  );
-}
-export function SketchWorkspace({ ambient = false }: { ambient?: boolean }) {
+export function SketchWorkspace({
+  ambient = false,
+  active = true,
+}: {
+  ambient?: boolean;
+  active?: boolean;
+}) {
   const [weatherDate, setWeatherDate] = useState<string | null>(null);
   const [quiet, setQuiet] = useState(false);
   const [focusTask, setFocusTask] = useState<Task | null>(null);
@@ -53,12 +48,7 @@ export function SketchWorkspace({ ambient = false }: { ambient?: boolean }) {
           <Slot area="tasks" title="کارهای من">
             <TodoList onFocusTask={(task) => setFocusTask({ ...task })} />
           </Slot>
-          <Slot area="ad-one" title="تبلیغات ۱">
-            <div className="advertisement-placeholder">فضای تبلیغاتی</div>
-          </Slot>
-          <Slot area="ad-two" title="تبلیغات ۲">
-            <div className="advertisement-placeholder">فضای تبلیغاتی</div>
-          </Slot>
+          {!ambient && !quiet && <SponsoredAds placement="sidebar" />}
         </aside>
       </div>
       <aside className="sketch-right">
@@ -73,7 +63,7 @@ export function SketchWorkspace({ ambient = false }: { ambient?: boolean }) {
         </Slot>
       </aside>
       <div className="sketch-main">
-        <WorkspaceCarousel />
+        <WorkspaceCarousel companionActive={active && !ambient && !quiet} />
         <div className="sketch-widgets">
           <section className="sketch-notes" aria-label="یادداشت‌ها">
             <StickyNotes />
@@ -103,9 +93,7 @@ export function SketchWorkspace({ ambient = false }: { ambient?: boolean }) {
           <Slot area="scores" title="نتایج زنده">
             <LiveScores active={!ambient} />
           </Slot>
-          <Slot area="ads" title="تبلیغات">
-            <Placeholder lines={0} />
-          </Slot>
+          {!ambient && !quiet && <SponsoredAds placement="footer" />}
         </div>
       </div>
     </div>

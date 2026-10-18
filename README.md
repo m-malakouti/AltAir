@@ -167,3 +167,7 @@ inside Google's map. Set `WXT_GOOGLE_MAPS_EMBED_KEY` and rebuild to activate it.
 Existing saved addresses are preserved. The map loads only on the active slide;
 this mode does not select coordinates into the form or call the Neshan backend.
 See [commute setup and behavior](docs/commute.md).
+
+## Sponsored image and GIF placements
+
+The local admin dashboard manages image/GIF campaigns and multi-slide creatives, scheduling, placement and a global stop switch. New Tab and Side Panel fetch eligible campaigns independently of personal bookmarks. Users can hide a brand or disable ads; ambient/offline views remain ad-free. See [advertising](docs/advertising.md).

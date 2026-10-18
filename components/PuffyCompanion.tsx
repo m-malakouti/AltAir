@@ -25,6 +25,24 @@ export function PuffyCompanion({ active = true }: { active?: boolean }) {
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const rapid = useRef({ time: 0, count: 0 });
+  const stage = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = stage.current;
+    if (!element) return;
+    const measure = () => {
+      const width = element.getBoundingClientRect().width;
+      element.style.setProperty('--roam-range', `${Math.max(0, width - Math.min(240, width))}px`);
+      element.style.setProperty('--travel', `${Math.min(125, Math.max(0, width - 240))}px`);
+    };
+    measure();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(element);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
 
   useEffect(() => {
     const update = () => setVisible(!document.hidden);
@@ -158,6 +176,7 @@ export function PuffyCompanion({ active = true }: { active?: boolean }) {
         : story[scene].text);
   return (
     <div
+      ref={stage}
       className={`puffy-companion puffy-scene--${scene}${snow ? ' puffy-snowball' : ''}${!active || !visible ? ' puffy-companion--inactive' : ''}`}
       data-scene={scene}
     >

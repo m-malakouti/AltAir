@@ -1,6 +1,7 @@
 import { ThemeSelector } from './ThemeSelector';
 import { BackgroundSelector } from './BackgroundSelector';
 import { GlassCard } from './ui/GlassCard';
+import { AdsPreferences } from '@/features/ads/ui/SponsoredAds';
 
 export function AppearanceCard() {
   return (
@@ -16,6 +17,7 @@ export function AppearanceCard() {
       </div>
       <ThemeSelector />
       <BackgroundSelector />
+      <AdsPreferences />
       <p className="helper-text">انتخابت برای دفعهٔ بعد نگه داشته می‌شود.</p>
     </GlassCard>
   );

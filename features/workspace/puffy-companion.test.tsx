@@ -27,6 +27,14 @@ it('plays a story, reacts to interruptions and passes, celebrates real tasks and
       });
     expect(scene()).toBe('hello');
     advance(4500);
+    expect(scene()).toBe('explore');
+    advance(6500);
+    expect(scene()).toBe('bounce');
+    advance(3200);
+    expect(scene()).toBe('peek');
+    advance(4000);
+    expect(scene()).toBe('stretch');
+    advance(3500);
     expect(scene()).toBe('rest');
     advance(12000);
     expect(scene()).toBe('prepare');

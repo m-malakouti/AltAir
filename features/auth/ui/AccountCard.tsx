@@ -41,6 +41,19 @@ export function AccountCard() {
   const [reload, setReload] = useState(0);
   const [googleUser, setGoogleUser] = useState<GoogleProfile | null>(null);
   useEffect(() => {
+    if (!session || !user) return;
+    const heartbeat = () => {
+      if (document.visibilityState === 'visible') void getProfile(session.token).catch(() => {});
+    };
+    heartbeat();
+    const timer = window.setInterval(heartbeat, 120_000);
+    document.addEventListener('visibilitychange', heartbeat);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', heartbeat);
+    };
+  }, [session, user]);
+  useEffect(() => {
     let alive = true;
     let revision = 0;
     const load = async () => {
