@@ -22,7 +22,7 @@
   position: relative;
   width: 100%;
   min-width: 0;
-  height: 214px;
+  height: 220px;
   --travel: clamp(0px, 10vw, 100px);
 }
 .puffy-actor {
@@ -211,7 +211,7 @@
     transform: translate(-15px, -3px) rotate(0);
   }
   50% {
-    transform: translate(-22px, -76px) rotate(180deg);
+    transform: translate(-22px, -54px) rotate(180deg);
   }
 }
 @keyframes puffy-kick {
@@ -233,7 +233,7 @@
     transform: translate(-15px, -3px);
   }
   35% {
-    transform: translate(-28px, -102px);
+    transform: translate(-28px, -64px);
   }
   60% {
     transform: translate(5px, -60px);
@@ -312,200 +312,132 @@
     animation: none !important;
   }
 }
-/* Puffy has a recognizable home, and can be placed outside the carousel by the user. */
+/* A fixed home keeps play separate from the surrounding workspace. */
 .puffy-home {
-  position: relative;
   min-width: 0;
-  min-height: 300px;
   align-self: stretch;
 }
 .puffy-habitat {
   position: relative;
+  isolation: isolate;
   width: 100%;
-  height: 300px;
-  font-family: inherit;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 50% 100%, #90cbbb20, transparent 75%), var(--color-surface-soft);
+  box-shadow: inset 0 1px 0 #ffffff18;
   color: var(--color-text);
   direction: rtl;
+}
+.puffy-habitat::before {
+  content: '';
+  position: absolute;
+  bottom: 22px;
+  inset-inline: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
 }
 .puffy-habitat[hidden] {
   display: none;
 }
-.puffy-habitat-toolbar {
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 8px;
+.puffy-actor {
+  left: 12px;
+  top: 50px;
+  bottom: auto;
+  width: min(160px, calc(100% - 24px));
+  height: 148px;
+  transition: top 260ms cubic-bezier(0.4, 0, 1, 1);
 }
-.puffy-habitat-toolbar > span {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: var(--color-text);
+.puffy-motion {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
-.puffy-habitat-toolbar small {
-  margin-inline-start: 6px;
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0;
-  color: var(--color-muted);
-}
-.puffy-habitat-toolbar > div {
-  display: flex;
-  gap: 4px;
-}
-.puffy-habitat-toolbar button {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  color: var(--color-muted);
-  background: transparent;
+.puffy-interact {
   cursor: grab;
   touch-action: none;
-}
-.puffy-habitat-toolbar button:hover,
-.puffy-habitat-toolbar button:focus-visible {
-  background: var(--color-surface-soft);
-  color: var(--color-text);
-}
-.puffy-habitat-toolbar button:focus-visible,
-.puffy-call-home:focus-visible {
-  outline: 2px solid var(--color-ring);
-  outline-offset: 3px;
-}
-.puffy-habitat--floating {
-  position: fixed;
-  z-index: 35;
-  width: min(360px, calc(100vw - 24px));
-  height: min(300px, calc(100dvh - 24px));
-  filter: drop-shadow(0 12px 18px #10233826);
-}
-.puffy-habitat--floating .puffy-habitat-toolbar {
-  border-radius: 16px;
-  background: var(--color-surface-solid);
-  box-shadow: 0 3px 16px #10233814;
-}
-.puffy-habitat--dragging {
   user-select: none;
-  cursor: grabbing;
+  -webkit-user-select: none;
 }
-.puffy-habitat--dragging .puffy-habitat-toolbar button {
-  cursor: grabbing;
+.puffy-interact .weather-mascot {
+  display: block;
+  margin: 0;
+  width: 100%;
+  height: 100%;
 }
-.puffy-habitat .puffy-companion {
-  height: 270px;
-  --roam-range: 0px;
+.puffy-interact .weather-mascot svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 4px 5px #132f4a18);
 }
-.puffy-habitat .puffy-actor {
-  left: 0;
-  bottom: 10px;
-  width: min(240px, 100%);
-  height: 250px;
+.puffy-scene--explore .puffy-motion {
+  animation: puffy-roam 6.5s ease-in-out both;
 }
-.puffy-habitat .puffy-interact .weather-mascot svg {
-  width: 180px;
-  height: 153px;
-  filter: drop-shadow(0 7px 8px #132f4a20);
-}
-.puffy-habitat .puffy-interact figcaption {
-  max-width: 240px;
-  height: 72px;
-  font-size: 12px;
-  line-height: 1.8;
-  padding: 8px 12px;
-}
-.puffy-habitat .puffy-ball {
-  bottom: 17px;
-  width: 34px;
-  height: 34px;
-}
-.puffy-home--away {
-  display: grid;
-  place-items: center;
-  min-height: 300px;
-}
-.puffy-call-home {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--color-surface-soft);
-  padding: 10px 14px;
-  font: inherit;
-  color: var(--color-text);
-  cursor: pointer;
-}
-.puffy-position-error {
-  position: absolute;
-  bottom: 0;
-  inset-inline: 0;
-  font-size: 10px;
-  direction: rtl;
-}
-.puffy-habitat .puffy-scene--explore .puffy-actor {
-  animation: puffy-roam 6.5s cubic-bezier(0.4, 0, 0.2, 1) both;
-}
-.puffy-habitat .puffy-scene--bounce .puffy-actor {
-  animation: puffy-big-hop 1.05s ease-in-out 3;
-}
-.puffy-habitat .puffy-scene--peek .puffy-actor {
+.puffy-scene--peek .puffy-motion {
   animation: puffy-peek 4s ease-in-out both;
 }
-.puffy-habitat .puffy-scene--stretch .mascot-body {
-  animation: puffy-stretch 3.5s ease-in-out both;
+.puffy-scene--bounce .puffy-motion,
+.puffy-scene--celebrate .puffy-motion {
+  animation: puffy-hop 1.05s ease-in-out 3;
 }
-.puffy-habitat .puffy-scene--dance .puffy-actor {
+.puffy-scene--dance .puffy-motion {
   animation: puffy-dance 1.05s ease-in-out 4;
 }
-.puffy-habitat .puffy-scene--dance .mascot-body {
-  animation: puffy-wiggle 0.52s ease-in-out 8;
+.puffy-scene--stretch .mascot-body {
+  animation: puffy-stretch 3.5s ease-in-out both;
 }
-.puffy-habitat .puffy-scene--explore .mascot-body {
+.puffy-scene--explore .mascot-body {
   animation: puffy-step 0.35s ease-in-out infinite;
 }
-.puffy-habitat .puffy-scene--hello .puffy-actor {
-  animation: puffy-arrive 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+.puffy-companion--held .puffy-actor {
+  transition: none;
+  z-index: 3;
 }
-.puffy-habitat .puffy-scene--celebrate .puffy-actor {
-  animation: puffy-big-hop 1s ease-in-out 3;
+.puffy-companion--held .puffy-motion,
+.puffy-companion--held .puffy-interact,
+.puffy-companion--held .mascot-body,
+.puffy-companion--held .mascot-kicking-foot {
+  animation: none;
+  transform: none;
 }
-.puffy-habitat .puffy-scene--explore .puffy-ball {
-  animation: puffy-roll 6.5s ease-in-out both;
+.puffy-companion--held .puffy-interact {
+  cursor: grabbing;
+  transform-origin: var(--grip-x, 50%) var(--grip-y, 25%);
+  transform: rotate(var(--hang-angle, 0deg));
+  transition: transform 180ms ease-out;
+}
+.puffy-companion--held .weather-mascot {
+  transform-origin: var(--grip-x, 50%) var(--grip-y, 25%);
+  animation: puffy-dangle 1.4s ease-in-out infinite;
+}
+.puffy-companion--held .puffy-ball {
+  visibility: hidden;
+}
+@keyframes puffy-dangle {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
 }
 @keyframes puffy-roam {
   0%,
   100% {
     transform: translate(0, 0);
   }
-  25% {
-    transform: translate(calc(var(--roam-range) * 0.45), -18px) rotate(-4deg);
+  30% {
+    transform: translate(calc(var(--roam-range) * 0.5), -3px);
   }
-  55% {
-    transform: translate(var(--roam-range), -5px) rotate(3deg);
-  }
-  75% {
-    transform: translate(calc(var(--roam-range) * 0.65), -32px) rotate(-2deg);
-  }
-}
-@keyframes puffy-big-hop {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  20% {
-    transform: translateY(6px) scaleY(0.96);
-  }
-  55% {
-    transform: translateY(-44px) rotate(-6deg);
+  60% {
+    transform: translate(var(--roam-range), 0);
   }
   80% {
-    transform: translateY(-4px) scaleY(1.02);
+    transform: translate(calc(var(--roam-range) * 0.65), -4px);
   }
 }
 @keyframes puffy-peek {
@@ -515,66 +447,46 @@
   }
   35%,
   70% {
-    transform: translateX(var(--roam-range)) rotate(9deg);
+    transform: translateX(var(--roam-range));
   }
 }
-@keyframes puffy-stretch {
-  25% {
-    transform: translateY(-12px) scale(0.93, 1.14);
+@keyframes puffy-hop {
+  0%,
+  100% {
+    transform: translateY(0);
   }
-  65% {
-    transform: translateY(4px) scale(1.1, 0.9);
+  50% {
+    transform: translateY(-10px);
   }
 }
 @keyframes puffy-dance {
   0%,
   100% {
-    transform: translate(0, 0) rotate(-7deg);
+    transform: translate(0, 0);
   }
   50% {
-    transform: translate(calc(var(--roam-range) * 0.5), -25px) rotate(8deg);
+    transform: translate(calc(var(--roam-range) * 0.5), -5px);
   }
 }
-@keyframes puffy-wiggle {
-  50% {
-    transform: rotate(7deg) translateY(-6px);
+@keyframes puffy-stretch {
+  25% {
+    transform: translateY(-4px) scale(0.98, 1.04);
+  }
+  65% {
+    transform: translateY(2px) scale(1.03, 0.98);
   }
 }
-@keyframes puffy-arrive {
-  0% {
-    opacity: 0;
-    transform: translateY(25px) scale(0.8);
-  }
-  70% {
-    opacity: 1;
-    transform: translateY(-8px) scale(1.04);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-  }
-}
-@keyframes puffy-roll {
-  40% {
-    transform: translate(18px, -42px) rotate(180deg);
-  }
-  75% {
-    transform: translate(30px, 0) rotate(360deg);
-  }
-}
-@media (max-width: 540px) {
+@media (max-width: 420px) {
   .search-companion-stage {
-    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-columns: 1fr;
   }
-  .puffy-habitat-toolbar small {
-    display: none;
-  }
-  .puffy-habitat .puffy-interact .weather-mascot svg {
-    width: 160px;
-    height: 136px;
+  .search-companion-stage .google-logo {
+    width: 72px;
+    margin: 0 auto;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .puffy-habitat * {
+  .puffy-companion * {
     animation: none !important;
     transition: none !important;
   }

@@ -86,3 +86,28 @@ $('settings-form').addEventListener('submit', async (event) => {
   finally { $('save').disabled = false; }
 });
 void overview();
+async function loadCompanion() {
+  $('companion-fields').disabled = true;
+  try {
+    const settings = await request('/admin/api/companion');
+    $('puffy-enabled').checked = settings.enabled;
+    $('puffy-motion').checked = settings.motionEnabled;
+    $('puffy-drag').checked = settings.dragEnabled;
+    $('puffy-range').value = settings.horizontalRange;
+    $('companion-fields').disabled = false;
+    $('companion-result').textContent = settings.enabled ? 'پوفی فعال است.' : 'پوفی فعلاً از میزکار حذف شده است.';
+  } catch { $('companion-result').textContent = 'خواندن تنظیمات انجام نشد؛ دوباره تلاش کنید.'; }
+}
+$('companion-retry').addEventListener('click', loadCompanion);
+$('companion-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const settings = { enabled: $('puffy-enabled').checked, motionEnabled: $('puffy-motion').checked, dragEnabled: $('puffy-drag').checked, horizontalRange: Number($('puffy-range').value) };
+  $('companion-fields').disabled = true;
+  $('companion-result').textContent = 'در حال ذخیره…';
+  try {
+    await request('/admin/api/companion', { method:'POST', headers:{'Content-Type':'application/json','X-AltAir-Admin':'1'}, body:JSON.stringify(settings) });
+    $('companion-result').textContent = 'ذخیره شد؛ در افزونه نیز اعمال می‌شود.';
+  } catch { $('companion-result').textContent = 'ذخیره نشد؛ دوباره تلاش کنید.'; }
+  finally { $('companion-fields').disabled = false; }
+});
+void loadCompanion();

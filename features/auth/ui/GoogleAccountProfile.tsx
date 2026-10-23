@@ -1,43 +1,32 @@
-import { useEffect, useId, useState } from 'react';
-import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
+import { useEffect, useState } from 'react';
 import type { GoogleProfile } from '../google-auth';
 import {
-  GENDERS,
   readGoogleDetails,
   saveGoogleDetails,
+  GENDERS,
   type GoogleDetails,
 } from '../google-details';
-
+import { RegistrationWizard } from './RegistrationWizard';
+import { savePersonalization } from '@/features/workspace/personalization-store';
 export function GoogleAccountProfile({ user }: { user: GoogleProfile }) {
-  const id = useId();
   const [details, setDetails] = useState<GoogleDetails | null>(null);
-  const [birthDate, setBirthDate] = useState('');
-  const [gender, setGender] = useState('');
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loadFailed, setLoadFailed] = useState(false);
-  const [retry, setRetry] = useState(0);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
   const [notice, setNotice] = useState('');
-  const [photoFailed, setPhotoFailed] = useState(false);
   useEffect(() => {
     let alive = true;
     void readGoogleDetails(user.sub)
       .then((saved) => {
-        if (!alive) return;
-        setDetails(saved);
-        setBirthDate(saved?.birthDate ?? '');
-        setGender(saved?.gender ?? '');
-        setEditing(!saved);
-        setLoadFailed(false);
-        setError('');
+        if (alive) {
+          setDetails(saved);
+          setEditing(!saved);
+          setError('');
+        }
       })
       .catch(() => {
-        if (alive) {
-          setLoadFailed(true);
-          setError('خواندن مشخصات انجام نشد. دوباره تلاش کن.');
-        }
+        if (alive) setError('خواندن مشخصات انجام نشد؛ دوباره تلاش کن.');
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -46,116 +35,53 @@ export function GoogleAccountProfile({ user }: { user: GoogleProfile }) {
       alive = false;
     };
   }, [user.sub, retry]);
+  const names = user.name.trim().split(/\s+/);
   return (
     <div className="google-account-profile">
-      <div className="google-account-heading">
-        {user.picture && !photoFailed ? (
-          <img
-            className="google-account-avatar"
-            src={user.picture}
-            alt={`تصویر پروفایل ${user.name}`}
-            referrerPolicy="no-referrer"
-            onError={() => setPhotoFailed(true)}
-          />
-        ) : (
-          <span
-            className="google-account-avatar google-account-avatar--fallback"
-            aria-hidden="true"
-          >
-            {Array.from(user.name)[0]}
-          </span>
-        )}
-        <p className="auth-welcome">{user.name}، خوش آمدی</p>
-      </div>
-      <dl>
-        <dt>ایمیل گوگل</dt>
-        <dd dir="ltr">{user.email}</dd>
-      </dl>
+      <p className="auth-welcome">{user.name}، خوش آمدی</p>
+      <p dir="ltr">{user.email}</p>
       {loading ? (
         <p role="status">در حال خواندن مشخصات…</p>
-      ) : loadFailed ? (
-        <button
-          type="button"
-          onClick={() => {
-            setLoading(true);
-            setRetry((value) => value + 1);
-          }}
-        >
-          تلاش دوباره
-        </button>
-      ) : editing ? (
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            setSaving(true);
-            setError('');
-            setNotice('');
-            const next = { birthDate, gender: gender as GoogleDetails['gender'] };
-            void saveGoogleDetails(user.sub, next)
-              .then(() => {
-                setDetails(next);
-                setEditing(false);
-                setNotice('مشخصات ذخیره شد.');
-              })
-              .catch((reason: unknown) =>
-                setError(reason instanceof Error ? reason.message : 'ذخیرهٔ مشخصات انجام نشد.'),
-              )
-              .finally(() => setSaving(false));
-          }}
-        >
-          <h3>{details ? 'ویرایش مشخصات' : 'تکمیل مشخصات'}</h3>
-          <p className="helper-text">
-            این اطلاعات را خودت وارد می‌کنی و فقط روی همین مرورگر ذخیره می‌شوند.
-          </p>
-          <label htmlFor={`${id}-birth`}>تاریخ تولد (شمسی)</label>
-          <PersianDatePicker
-            id={`${id}-birth`}
-            value={birthDate}
-            disabled={saving}
-            onChange={setBirthDate}
-          />
-          <label htmlFor={`${id}-gender`}>جنسیت</label>
-          <select
-            id={`${id}-gender`}
-            value={gender}
-            required
-            disabled={saving}
-            onChange={(event) => setGender(event.target.value)}
+      ) : error ? (
+        <>
+          <p role="alert">{error}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              setRetry((value) => value + 1);
+            }}
           >
-            <option value="">انتخاب کن</option>
-            {Object.entries(GENDERS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-          <div className="auth-actions">
-            <button type="submit" disabled={saving}>
-              {saving ? 'در حال ذخیره…' : 'ذخیرهٔ مشخصات'}
-            </button>
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => {
-                setEditing(false);
-                setError('');
-              }}
-            >
-              {details ? 'انصراف' : 'بعداً تکمیل می‌کنم'}
-            </button>
-          </div>
-        </form>
+            تلاش دوباره
+          </button>
+        </>
+      ) : editing ? (
+        <RegistrationWizard
+          accountKey={'google:' + user.sub}
+          verifiedName={user.name}
+          initialProfile={{
+            firstName: names[0] ?? '',
+            lastName: names.slice(1).join(' '),
+            birthDate: details?.birthDate ?? '',
+            gender: details?.gender ?? 'undisclosed',
+          }}
+          onComplete={async ({ profile, interests, cards }) => {
+            const next = { birthDate: profile.birthDate, gender: profile.gender };
+            await saveGoogleDetails(user.sub, next);
+            await savePersonalization('google:' + user.sub, interests, cards);
+            setDetails(next);
+            setEditing(false);
+            setNotice('مشخصات و کارت‌های میزکارت ذخیره شدند.');
+          }}
+        />
       ) : (
         <>
           {details && (
             <dl>
               <dt>تاریخ تولد</dt>
               <dd>
-                {new Date(`${details.birthDate}T12:00:00Z`).toLocaleDateString('fa-IR', {
+                {new Date(details.birthDate + 'T12:00:00Z').toLocaleDateString('fa-IR', {
                   timeZone: 'UTC',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
                 })}
               </dd>
               <dt>جنسیت</dt>
@@ -165,17 +91,14 @@ export function GoogleAccountProfile({ user }: { user: GoogleProfile }) {
           <button
             type="button"
             onClick={() => {
-              setBirthDate(details?.birthDate ?? '');
-              setGender(details?.gender ?? '');
               setEditing(true);
               setNotice('');
             }}
           >
-            {details ? 'ویرایش مشخصات' : 'تکمیل مشخصات'}
+            ویرایش مشخصات، علایق و کارت‌ها
           </button>
         </>
       )}
-      {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
     </div>
   );

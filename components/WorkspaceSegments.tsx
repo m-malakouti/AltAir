@@ -11,6 +11,7 @@ import { LAYOUT_KEY, readLayout, updateLayout } from '@/features/workspace/layou
 import { watchWorkspaceValue } from '@/lib/browser/workspace-storage';
 import { Icon } from './ui/Icon';
 import type { IconName } from './ui/Icon';
+import { useCardChoices, setCardVisibility } from '@/features/workspace/personalization-store';
 const titles = {
   calendar: 'تقویم',
   bookmarks: 'بوکمارک‌ها',
@@ -26,6 +27,7 @@ const icons: Record<WidgetId, IconName> = {
   notes: 'note',
 };
 export function WorkspaceSegments() {
+  const cardChoices = useCardChoices();
   const [layout, setLayout] = useState(defaultLayout);
   const [editing, setEditing] = useState(false);
   const [dragging, setDragging] = useState<WidgetId | null>(null);
@@ -62,7 +64,13 @@ export function WorkspaceSegments() {
     if (!ready || busy) return;
     setBusy(true);
     try {
-      setLayout(await updateLayout(action));
+      if (action.type === 'visibility') await setCardVisibility(action.id, !cardChoices[action.id]);
+      else {
+        setLayout(await updateLayout(action));
+        if (action.type === 'reset') {
+          for (const widget of defaultLayout().widgets) await setCardVisibility(widget.id, true);
+        }
+      }
       setError('');
       setStatus('چیدمان ذخیره شد.');
     } catch {
@@ -80,7 +88,8 @@ export function WorkspaceSegments() {
     currencies: <CurrencyBoard />,
     notes: <StickyNotes />,
   };
-  const visible = layout.widgets.filter((w) => !w.hidden);
+  const displayedWidgets = layout.widgets.map((w) => ({ ...w, hidden: !cardChoices[w.id] }));
+  const visible = displayedWidgets.filter((w) => !w.hidden);
   return (
     <div className={`workspace-layout ${editing ? 'is-editing' : ''}`}>
       <div className="layout-toolbar">
@@ -95,7 +104,7 @@ export function WorkspaceSegments() {
         <div className="layout-actions">
           {editing && (
             <>
-              {layout.widgets.map((w) => (
+              {displayedWidgets.map((w) => (
                 <button
                   key={w.id}
                   className="icon-button"
@@ -145,7 +154,7 @@ export function WorkspaceSegments() {
         </p>
       )}
       <div className="workspace-segments">
-        {layout.widgets.map((w) => {
+        {displayedWidgets.map((w) => {
           const index = visible.findIndex((v) => v.id === w.id);
           const controlsDisabled = !ready || busy;
           return (

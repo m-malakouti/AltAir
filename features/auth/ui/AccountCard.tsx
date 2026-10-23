@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Icon } from '@/components/ui/Icon';
 import { GoogleAccountProfile } from './GoogleAccountProfile';
-import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
+import { RegistrationProgress, RegistrationWizard } from './RegistrationWizard';
+import { savePersonalization } from '@/features/workspace/personalization-store';
 import {
   authConfigured,
   AuthError,
@@ -12,7 +13,7 @@ import {
   verifyOtp,
 } from '../auth-client';
 import { latinDigits, normalizePhone } from '../auth-model';
-import type { Challenge, Profile, ProfileInput, Session } from '../auth-model';
+import type { Challenge, Profile, Session } from '../auth-model';
 import { readSession, saveSession, watchSession } from '../auth-storage';
 import {
   googleAuthConfigured,
@@ -27,7 +28,9 @@ export function AccountCard() {
   const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<'phone' | 'code' | 'profile' | 'account'>('phone');
+  const [step, setStep] = useState<'phone' | 'code' | 'profile' | 'account' | 'personalize'>(
+    'phone',
+  );
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [challenge, setChallenge] = useState<Challenge | null>(null);
@@ -75,12 +78,6 @@ export function AccountCard() {
       window.removeEventListener('focus', refresh);
     };
   }, []);
-  const [profile, setProfile] = useState({
-    firstName: '',
-    lastName: '',
-    birthDate: '',
-    gender: '',
-  });
 
   useEffect(() => {
     let alive = true;
@@ -189,7 +186,7 @@ export function AccountCard() {
           <h2 id={id + '-title'}>
             {googleUser
               ? 'حساب گوگل'
-              : step === 'profile'
+              : step === 'profile' || step === 'personalize'
                 ? 'تکمیل ثبت‌نام'
                 : step === 'code'
                   ? 'تأیید شماره موبایل'
@@ -206,6 +203,7 @@ export function AccountCard() {
             <Icon name="close" />
           </button>
         </header>
+        {!session && !googleUser && <RegistrationProgress current={0} />}
         {!session && !googleUser && (
           <div className="auth-google-section">
             <button
@@ -389,78 +387,29 @@ export function AccountCard() {
             </div>
           </form>
         )}
-        {step === 'profile' && session && (
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              void run(async () => {
-                const saved = await completeProfile(session.token, profile as ProfileInput);
-                if (!saved) throw new Error('ثبت مشخصات انجام نشد.');
-                setUser(saved);
-                setStep('account');
-                await saveSession(session);
-                setProfile({ firstName: '', lastName: '', birthDate: '', gender: '' });
-              });
+        {!googleUser && (step === 'profile' || step === 'personalize') && session && (
+          <RegistrationWizard
+            key={session.token}
+            accountKey={user ? 'mobile:' + user.id : 'mobile:pending'}
+            initialProfile={user ?? undefined}
+            personalizationOnly={step === 'personalize'}
+            onComplete={async ({ profile, interests, cards }) => {
+              const saved = user ?? (await completeProfile(session.token, profile));
+              if (!saved) throw new Error('ثبت مشخصات انجام نشد.');
+              await savePersonalization('mobile:' + saved.id, interests, cards);
+              setUser(saved);
+              setStep('account');
+              await saveSession(session);
+              setOpen(false);
             }}
-          >
-            <p className="helper-text">شماره موبایل تأیید شد. مشخصاتت را تکمیل کن.</p>
-            <label htmlFor={id + '-first'}>نام</label>
-            <input
-              id={id + '-first'}
-              autoComplete="given-name"
-              required
-              maxLength={60}
-              value={profile.firstName}
-              onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-              disabled={busy}
-            />
-            <label htmlFor={id + '-last'}>نام خانوادگی</label>
-            <input
-              id={id + '-last'}
-              autoComplete="family-name"
-              required
-              maxLength={60}
-              value={profile.lastName}
-              onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-              disabled={busy}
-            />
-            <label htmlFor={id + '-birth'}>تاریخ تولد (شمسی)</label>
-            <PersianDatePicker
-              id={id + '-birth'}
-              value={profile.birthDate}
-              onChange={(birthDate) => setProfile({ ...profile, birthDate })}
-              disabled={busy}
-            />
-            <label htmlFor={id + '-gender'}>جنسیت</label>
-            <select
-              id={id + '-gender'}
-              required
-              value={profile.gender}
-              onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
-              disabled={busy}
-            >
-              <option value="">انتخاب کن</option>
-              <option value="female">زن</option>
-              <option value="male">مرد</option>
-              <option value="other">سایر</option>
-              <option value="undisclosed">ترجیح می‌دهم نگویم</option>
-            </select>
-            <p className="helper-text">مشخصات این نسخه روی سرور محلی ذخیره می‌شود.</p>
-            <div className="auth-actions">
-              <button
-                className="icon-button icon-button--primary"
-                disabled={busy}
-                aria-label="ثبت مشخصات"
-                title="ثبت مشخصات"
-              >
-                <Icon name="check" />
-              </button>
-            </div>
-          </form>
+          />
         )}
         {step === 'account' && user && (
           <div className="auth-profile">
             <p className="auth-welcome">{user.firstName}، خوش آمدی</p>
+            <button type="button" onClick={() => setStep('personalize')}>
+              تغییر علایق و کارت‌ها
+            </button>
             <dl>
               <dt>نام و نام خانوادگی</dt>
               <dd>

@@ -11,8 +11,19 @@ import { story, type PuffyScene } from '@/features/workspace/puffy-story';
 import { readTasks, TASKS_KEY, type Task } from '@/features/tasks/tasks-store';
 import { watchWorkspaceValue } from '@/lib/browser/workspace-storage';
 import './puffy-companion.css';
+import { usePuffyDrag } from '@/features/workspace/use-puffy-drag';
 
-export function PuffyCompanion({ active = true }: { active?: boolean }) {
+export function PuffyCompanion({
+  active = true,
+  motionEnabled = true,
+  dragEnabled = true,
+  horizontalRange = 48,
+}: {
+  active?: boolean;
+  motionEnabled?: boolean;
+  dragEnabled?: boolean;
+  horizontalRange?: number;
+}) {
   const [weather, setWeather] = useState<WeatherNow | null>(null);
   const [scene, setScene] = useState<PuffyScene>('hello');
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -25,24 +36,11 @@ export function PuffyCompanion({ active = true }: { active?: boolean }) {
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const rapid = useRef({ time: 0, count: 0 });
-  const stage = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const element = stage.current;
-    if (!element) return;
-    const measure = () => {
-      const width = element.getBoundingClientRect().width;
-      element.style.setProperty('--roam-range', `${Math.max(0, width - Math.min(240, width))}px`);
-      element.style.setProperty('--travel', `${Math.min(125, Math.max(0, width - 240))}px`);
-    };
-    measure();
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
-    observer?.observe(element);
-    window.addEventListener('resize', measure);
-    return () => {
-      observer?.disconnect();
-      window.removeEventListener('resize', measure);
-    };
-  }, []);
+  const { stage, actor, held, start, keyboard, consumeDragClick } = usePuffyDrag(
+    active && visible && dragEnabled,
+    () => setScene('rest'),
+    horizontalRange,
+  );
 
   useEffect(() => {
     const update = () => setVisible(!document.hidden);
@@ -137,7 +135,7 @@ export function PuffyCompanion({ active = true }: { active?: boolean }) {
         (a.due || '9999').localeCompare(b.due || '9999'),
     )[0];
   useEffect(() => {
-    if (!active || !visible) return;
+    if (!active || !visible || held || !motionEnabled) return;
     timer.current = setTimeout(() => {
       setMessage(undefined);
       if (scene === 'rest' && task && Date.now() >= remindAfter.current) {
@@ -147,9 +145,10 @@ export function PuffyCompanion({ active = true }: { active?: boolean }) {
       else setScene(story[scene].next);
     }, story[scene].duration);
     return () => clearTimeout(timer.current);
-  }, [active, visible, scene, task]);
+  }, [active, visible, held, scene, task, motionEnabled]);
 
   function react() {
+    if (consumeDragClick()) return;
     const now = Date.now();
     rapid.current = {
       time: now,
@@ -177,38 +176,50 @@ export function PuffyCompanion({ active = true }: { active?: boolean }) {
   return (
     <div
       ref={stage}
-      className={`puffy-companion puffy-scene--${scene}${snow ? ' puffy-snowball' : ''}${!active || !visible ? ' puffy-companion--inactive' : ''}`}
+      className={`puffy-companion puffy-scene--${scene}${held ? ' puffy-companion--held' : ''}${snow ? ' puffy-snowball' : ''}${!active || !visible || !motionEnabled ? ' puffy-companion--inactive' : ''}`}
       data-scene={scene}
     >
-      <div className="puffy-actor">
-        <button type="button" className="puffy-interact" aria-label="بازی با پوفی" onClick={react}>
-          <WeatherMascot
-            code={weather?.code ?? -1}
-            isDay={weather?.isDay ?? true}
-            mood={story[scene].mood}
-            paused={!active || !visible}
-            message={line}
-          />
-        </button>
-        <button
-          type="button"
-          className="puffy-ball"
-          aria-label="پاس دادن توپ به پوفی"
-          onClick={() => {
-            setScene('prepare');
-            setMessage('پاس قشنگی بود! حالا منو ببین!');
-          }}
-        >
-          <svg viewBox="0 0 40 40" aria-hidden="true">
-            <circle cx="20" cy="20" r="18" fill="#f3f4e9" stroke="#819099" strokeWidth="1.5" />
-            <path
-              d="m20 11 8 6-3 9H15l-3-9Zm-15 2 7 4-3 10-6-2m29-12-4 4 3 10 6-2M14 36l1-10m10 0 3 10M20 2v9"
-              fill="#354958"
-              stroke="#354958"
-              strokeWidth="2"
+      <div className="puffy-actor" ref={actor}>
+        <div className="puffy-motion">
+          <button
+            type="button"
+            className="puffy-interact"
+            aria-label="بازی با پوفی"
+            aria-description="برای جابه‌جایی بکشید یا از کلیدهای چپ و راست استفاده کنید"
+            onClick={react}
+            onPointerDown={dragEnabled ? start : undefined}
+            onKeyDown={dragEnabled ? keyboard : undefined}
+          >
+            <WeatherMascot
+              code={weather?.code ?? -1}
+              isDay={weather?.isDay ?? true}
+              mood={held ? 'surprised' : story[scene].mood}
+              paused={!active || !visible || held || !motionEnabled}
+              message={line}
+              showCaption={false}
+              hanging={held}
             />
-          </svg>
-        </button>
+          </button>
+          <button
+            type="button"
+            className="puffy-ball"
+            aria-label="پاس دادن توپ به پوفی"
+            onClick={() => {
+              setScene('prepare');
+              setMessage('پاس قشنگی بود! حالا منو ببین!');
+            }}
+          >
+            <svg viewBox="0 0 40 40" aria-hidden="true">
+              <circle cx="20" cy="20" r="18" fill="#f3f4e9" stroke="#819099" strokeWidth="1.5" />
+              <path
+                d="m20 11 8 6-3 9H15l-3-9Zm-15 2 7 4-3 10-6-2m29-12-4 4 3 10 6-2M14 36l1-10m10 0 3 10M20 2v9"
+                fill="#354958"
+                stroke="#354958"
+                strokeWidth="2"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
       {scene === 'remind' && task && (
         <div className="puffy-reminder" role="status">

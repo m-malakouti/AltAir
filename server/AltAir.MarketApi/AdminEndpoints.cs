@@ -53,5 +53,11 @@ public static class AdminEndpoints
             return Results.Ok(new { saved = true, settings });
         }).RequireRateLimiting("auth");
         routes.MapGet("/api/users", (AuthService auth) => Results.Ok(auth.AdminUsers()));
+        routes.MapGet("/api/companion", async (CompanionSettingsStore store, CancellationToken token) => Results.Ok(await store.ReadAsync(token)));
+        routes.MapPost("/api/companion", async (CompanionSettings settings, CompanionSettingsStore store, CancellationToken token) => {
+            if (!settings.Valid()) return Results.BadRequest(new { code = "invalid_companion_settings" });
+            await store.SaveAsync(settings, token);
+            return Results.Ok(settings);
+        }).RequireRateLimiting("auth");
     }
 }

@@ -42,7 +42,7 @@ it('plays a story, reacts to interruptions and passes, celebrates real tasks and
     expect(scene()).toBe('juggle');
     act(() => host.querySelector<HTMLButtonElement>('.puffy-interact')!.click());
     expect(scene()).toBe('miss');
-    expect(host.textContent).toContain('حواس‌پرت');
+    expect(host.querySelector('.puffy-interact figcaption')).toBeNull();
     advance(1500);
     expect(scene()).toBe('chase');
     advance(2500);

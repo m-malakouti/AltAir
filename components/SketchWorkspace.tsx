@@ -12,9 +12,20 @@ import { LiveScores } from './LiveScores';
 import { CastboxCard } from './CastboxCard';
 import { AmbientView } from './AmbientView';
 import { SponsoredAds } from '@/features/ads/ui/SponsoredAds';
-function Slot({ area, title, children }: { area: string; title: string; children: ReactNode }) {
+import { useCardChoices } from '@/features/workspace/personalization-store';
+function Slot({
+  area,
+  title,
+  children,
+  hidden = false,
+}: {
+  area: string;
+  title: string;
+  children: ReactNode;
+  hidden?: boolean;
+}) {
   return (
-    <section className={`sketch-card sketch-${area}`} aria-label={title}>
+    <section className={`sketch-card sketch-${area}`} aria-label={title} hidden={hidden}>
       {!['weather', 'month', 'date', 'market'].includes(area) && (
         <h2 className="sketch-heading">{title}</h2>
       )}
@@ -30,6 +41,7 @@ export function SketchWorkspace({
   active?: boolean;
 }) {
   const [weatherDate, setWeatherDate] = useState<string | null>(null);
+  const cards = useCardChoices();
   const [quiet, setQuiet] = useState(false);
   const [focusTask, setFocusTask] = useState<Task | null>(null);
   return (
@@ -38,14 +50,14 @@ export function SketchWorkspace({
     >
       {ambient && <AmbientView />}
       <div className="sketch-clock-stack">
-        <Slot area="date" title="امروز">
+        <Slot area="date" title="امروز" hidden={!cards.calendar}>
           <CalendarHero variant="date" />
         </Slot>
-        <Slot area="clock" title="ساعت">
+        <Slot area="clock" title="ساعت" hidden={!cards.clock}>
           <FocusClock requestedTask={focusTask} quiet={quiet} onQuietChange={setQuiet} />
         </Slot>
         <aside className="sketch-left">
-          <Slot area="tasks" title="کارهای من">
+          <Slot area="tasks" title="کارهای من" hidden={!cards.tasks}>
             <TodoList onFocusTask={(task) => setFocusTask({ ...task })} />
           </Slot>
           {!ambient && !quiet && <SponsoredAds placement="sidebar" />}
@@ -55,20 +67,23 @@ export function SketchWorkspace({
         <Slot area="account" title="حساب کاربری">
           <AccountCard />
         </Slot>
-        <Slot area="market" title="نرخ بازار">
+        <Slot area="market" title="نرخ بازار" hidden={!cards.currencies}>
           <CurrencyBoard />
         </Slot>
-        <Slot area="podcast" title="Castbox">
+        <Slot area="podcast" title="Castbox" hidden={!cards.podcast}>
           <CastboxCard />
         </Slot>
       </aside>
       <div className="sketch-main">
-        <WorkspaceCarousel companionActive={active && !ambient && !quiet} />
+        <WorkspaceCarousel
+          companionActive={active && !ambient && !quiet}
+          bookmarksVisible={cards.bookmarks}
+        />
         <div className="sketch-widgets">
-          <section className="sketch-notes" aria-label="یادداشت‌ها">
+          <section className="sketch-notes" aria-label="یادداشت‌ها" hidden={!cards.notes}>
             <StickyNotes />
           </section>
-          <Slot area="month" title="تقویم">
+          <Slot area="month" title="تقویم" hidden={!cards.calendar}>
             <CalendarHero
               variant="month"
               onSelectDate={(date) =>
@@ -85,13 +100,13 @@ export function SketchWorkspace({
               }
             />
           </Slot>
-          <Slot area="weather" title="آب‌وهوا">
+          <Slot area="weather" title="آب‌وهوا" hidden={!cards.weather}>
             <WeatherCard selectedDate={ambient ? null : weatherDate} compact={ambient} />
           </Slot>
         </div>
         <div className="sketch-bottom">
-          <Slot area="scores" title="نتایج زنده">
-            <LiveScores active={!ambient} />
+          <Slot area="scores" title="نتایج زنده" hidden={!cards.scores}>
+            <LiveScores active={!ambient && cards.scores} />
           </Slot>
           {!ambient && !quiet && <SponsoredAds placement="footer" />}
         </div>

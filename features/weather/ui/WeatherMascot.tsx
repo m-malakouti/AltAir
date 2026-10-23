@@ -21,6 +21,8 @@ export function WeatherMascot({
   stale = false,
   mood = 'idle',
   message,
+  showCaption = true,
+  hanging = false,
 }: {
   code: number;
   isDay: boolean;
@@ -28,6 +30,8 @@ export function WeatherMascot({
   stale?: boolean;
   mood?: 'idle' | 'happy' | 'love' | 'surprised' | 'sleepy' | 'curious' | 'grumpy';
   message?: string;
+  showCaption?: boolean;
+  hanging?: boolean;
 }) {
   const kind = weatherVisual(code, isDay);
   const wet = kind === 'rain' || kind === 'storm';
@@ -38,7 +42,16 @@ export function WeatherMascot({
       className={`weather-mascot weather-mascot--${kind} mascot-mood--${mood}${paused ? ' weather-mascot--paused' : ''}`}
     >
       <svg viewBox="0 0 200 170" fill="none" aria-hidden="true">
-        <ellipse cx="100" cy="153" rx="53" ry="8" fill={wet ? '#79d5f9' : '#8baec6'} opacity=".2" />
+        {!hanging && (
+          <ellipse
+            cx="100"
+            cy="153"
+            rx="53"
+            ry="8"
+            fill={wet ? '#79d5f9' : '#8baec6'}
+            opacity=".2"
+          />
+        )}
         {wet &&
           [25, 51, 148, 173].map((x, i) => (
             <path
@@ -82,7 +95,7 @@ export function WeatherMascot({
         )}
         <g className="mascot-body">
           <path
-            d="m78 137-5 13h17"
+            d={hanging ? 'm78 137-2 18h9' : 'm78 137-5 13h17'}
             stroke="#6688a0"
             strokeWidth="8"
             strokeLinecap="round"
@@ -90,14 +103,18 @@ export function WeatherMascot({
           />
           <path
             className="mascot-kicking-foot"
-            d="m114 137 5 13h-17"
+            d={hanging ? 'm114 137 3 18h-9' : 'm114 137 5 13h-17'}
             stroke="#6688a0"
             strokeWidth="8"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
           <path
-            d="M64 96Q46 100 44 116m91-20q16 4 20-12"
+            d={
+              hanging
+                ? 'M64 96Q48 111 53 126m82-30q17 16 12 30'
+                : 'M64 96Q46 100 44 116m91-20q16 4 20-12'
+            }
             stroke={cold ? '#a5d4ee' : '#b5e7de'}
             strokeWidth="10"
             strokeLinecap="round"
@@ -226,10 +243,12 @@ export function WeatherMascot({
           </g>
         )}
       </svg>
-      <figcaption>
-        <span className="weather-mascot-name">پوفی می‌گه</span>
-        {message ?? (stale ? 'خبر تازه ندارم؛ این حال‌وهوای قبلیه!' : quips[kind])}
-      </figcaption>
+      {showCaption && (
+        <figcaption>
+          <span className="weather-mascot-name">پوفی می‌گه</span>
+          {message ?? (stale ? 'خبر تازه ندارم؛ این حال‌وهوای قبلیه!' : quips[kind])}
+        </figcaption>
+      )}
     </figure>
   );
 }

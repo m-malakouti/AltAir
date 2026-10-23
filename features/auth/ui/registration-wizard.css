@@ -1,0 +1,271 @@
+.auth-dialog:has(.registration-wizard) {
+  width: min(680px, calc(100vw - 28px));
+}
+.registration-progress {
+  margin-block: 12px 24px;
+}
+.registration-progress > p {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.registration-progress progress {
+  width: 100%;
+  height: 5px;
+  accent-color: var(--color-accent);
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.registration-progress progress::-webkit-progress-bar {
+  background: var(--color-surface-soft);
+}
+.registration-progress progress::-webkit-progress-value {
+  background: var(--color-accent);
+}
+.registration-progress ol {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+}
+.registration-progress li {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: var(--color-muted);
+  text-align: center;
+}
+.registration-progress li > span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+}
+.registration-progress li[aria-current='step'] {
+  color: var(--color-text);
+  font-weight: 800;
+}
+.registration-progress li[aria-current='step'] > span {
+  background: var(--color-accent);
+  color: var(--color-surface-solid);
+  border-color: transparent;
+  box-shadow: 0 0 0 4px var(--color-surface-soft);
+}
+.registration-progress li.is-complete > span {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.wizard-heading h3 {
+  font-size: 22px;
+  margin: 0 0 8px;
+  outline: none;
+}
+.wizard-heading p {
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.9;
+  margin: 0 0 18px;
+}
+.wizard-fields {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.registration-wizard button {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+  padding: 10px 14px;
+}
+.registration-wizard button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+.registration-wizard button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.wizard-interests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-block: 12px 24px;
+}
+.wizard-interests button[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+.wizard-card-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+.wizard-card-tools > span {
+  margin-inline-end: auto;
+}
+.wizard-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.wizard-card {
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 12px;
+  min-width: 0;
+  background: var(--color-surface-soft);
+}
+.wizard-card.is-enabled {
+  border-color: var(--color-accent);
+}
+.wizard-preview {
+  height: 116px;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #80c7b91c, #a1b3e52b);
+}
+.wizard-preview small {
+  font-size: 9px;
+  color: var(--color-muted);
+}
+.wizard-preview strong {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+}
+.wizard-preview span {
+  text-align: center;
+  font-size: 10px;
+  color: var(--color-muted);
+}
+.wizard-card:not(.is-enabled) .wizard-preview {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+.wizard-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+.wizard-card h4 {
+  font-size: 13px;
+  margin: 0;
+}
+.wizard-card > p {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--color-muted);
+  margin: 8px 0;
+}
+.wizard-card-state {
+  font-size: 10px;
+  color: var(--color-muted);
+}
+.registration-wizard .wizard-switch {
+  width: 40px;
+  height: 24px;
+  border-radius: 20px;
+  padding: 3px;
+  flex-shrink: 0;
+  direction: ltr;
+}
+.wizard-switch span {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-muted);
+  transition: transform 0.15s ease;
+}
+.registration-wizard .wizard-switch[aria-checked='true'] {
+  background: var(--color-accent);
+  border-color: transparent;
+}
+.wizard-switch[aria-checked='true'] span {
+  background: white;
+  transform: translateX(15px);
+}
+.wizard-actions {
+  position: sticky;
+  bottom: -20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--color-surface-solid);
+  padding: 16px 0;
+  margin-top: 16px;
+  border-top: 1px solid var(--color-border);
+  z-index: 2;
+}
+.registration-wizard .wizard-primary {
+  background: var(--color-accent);
+  color: var(--color-surface-solid);
+  font-weight: 700;
+  border-color: transparent;
+}
+.wizard-review {
+  text-align: center;
+  padding: 12px 0;
+}
+.wizard-review > p {
+  font-size: 12px;
+  line-height: 1.9;
+}
+.wizard-review-avatar {
+  margin: auto;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 22px;
+  background: var(--color-surface-soft);
+  color: var(--color-accent);
+  font-size: 28px;
+}
+.wizard-summary-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.wizard-summary-cards span {
+  font-size: 11px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  background: var(--color-surface-soft);
+}
+@media (max-width: 420px) {
+  .wizard-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .registration-progress li {
+    font-size: 9px;
+  }
+  .wizard-heading h3 {
+    font-size: 19px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wizard-switch span {
+    transition: none;
+  }
+}

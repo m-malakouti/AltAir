@@ -7,13 +7,21 @@ import { PuffyHabitat } from './PuffyHabitat';
 import { WebSearch } from './WebSearch';
 import { Icon } from './ui/Icon';
 import { ActionButton } from './ui/ActionButton';
+import { useCompanionSettings } from '@/features/workspace/companion-settings';
 
 const slides = [
   { label: 'جست‌وجو و بوکمارک‌ها', icon: 'search' },
   { label: 'رفت‌وآمد من', icon: 'route' },
 ] as const;
 
-export function WorkspaceCarousel({ companionActive = true }: { companionActive?: boolean }) {
+export function WorkspaceCarousel({
+  companionActive = true,
+  bookmarksVisible = true,
+}: {
+  companionActive?: boolean;
+  bookmarksVisible?: boolean;
+}) {
+  const companion = useCompanionSettings(companionActive);
   const [active, setActive] = useState(0);
   const [height, setHeight] = useState<number>();
   const panels = useRef<(HTMLDivElement | null)[]>([]);
@@ -134,13 +142,26 @@ export function WorkspaceCarousel({ companionActive = true }: { companionActive?
               {index === 0 ? (
                 <div className="sketch-center">
                   <section className="sketch-search" aria-label="جست‌وجو در گوگل">
-                    <div className="search-companion-stage">
+                    <div
+                      className={
+                        companion.enabled ? 'search-companion-stage' : 'search-google-only'
+                      }
+                    >
                       <GoogleLogo />
-                      <PuffyHabitat active={companionActive && active === 0} />
+                      {companion.enabled && (
+                        <PuffyHabitat
+                          active={companionActive && active === 0}
+                          settings={companion}
+                        />
+                      )}
                     </div>
                     <WebSearch />
                   </section>
-                  <section className="sketch-card sketch-bookmarks" aria-label="بوکمارک‌ها">
+                  <section
+                    className="sketch-card sketch-bookmarks"
+                    aria-label="بوکمارک‌ها"
+                    hidden={!bookmarksVisible}
+                  >
                     <BookmarkManager />
                   </section>
                   <SavedCommuteCard onOpen={() => select(1, true)} />

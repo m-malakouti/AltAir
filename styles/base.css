@@ -5292,3 +5292,21 @@ summary.icon-button::-webkit-details-marker {
     margin-inline-start: 8px;
   }
 }
+.search-google-only {
+  display: grid;
+  place-items: center;
+  min-height: 94px;
+  padding: 12px;
+}
+.search-google-only .google-logo {
+  width: min(160px, 60%);
+  margin: 0;
+}
+.search-google-only .google-logo img {
+  width: 100%;
+  height: auto;
+}
+.sketch-workspace [hidden],
+.workspace-segment[hidden] {
+  display: none !important;
+}

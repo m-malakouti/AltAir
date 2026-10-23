@@ -8,6 +8,7 @@ import { AppearanceCard } from '@/components/AppearanceCard';
 import { Button } from '@/components/ui/Button';
 import { FocusClock } from '@/features/focus/ui/FocusClock';
 import { SponsoredAds, SponsoredAdsProvider } from '@/features/ads/ui/SponsoredAds';
+import { useCardChoices } from '@/features/workspace/personalization-store';
 import {
   getViewMode,
   initializeViewMode,
@@ -17,6 +18,7 @@ import {
 
 export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab' }) {
   const [view, setView] = useState<'workspace' | 'appearance'>('workspace');
+  const cards = useCardChoices();
   const preference = useSyncExternalStore(subscribeViewMode, getViewMode);
   const ambient = surface === 'newtab' && preference.mode === 'ambient';
   const modeButton = useRef<HTMLButtonElement>(null);
@@ -105,7 +107,9 @@ export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab
             <SketchWorkspace ambient={ambient} active={view === 'workspace'} />
           ) : (
             <>
-              <FocusClock />
+              <div hidden={!cards.clock}>
+                <FocusClock />
+              </div>
               <WebSearch />
               <WorkspaceSegments />
               <SponsoredAds placement="sidebar" />

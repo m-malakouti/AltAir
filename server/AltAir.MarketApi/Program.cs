@@ -23,6 +23,7 @@ builder.Services.AddHttpClient("navasan", client => client.Timeout = TimeSpan.Fr
 builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.None);
 builder.Services.AddSingleton<NavasanService>();
 builder.Services.AddSingleton(new AdminSettingsStore(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "admin-settings.json")));
+builder.Services.AddSingleton(new CompanionSettingsStore(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "companion-settings.json")));
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<WeatherService>();
 builder.Services.AddHttpClient("weather", client => client.Timeout = TimeSpan.FromSeconds(10))
@@ -53,6 +54,12 @@ var app = builder.Build();
 app.UseCors();
 app.UseRateLimiter();
 app.MapAdmin();
+app.MapGet("/api/workspace/companion", async (CompanionSettingsStore store, HttpContext context, CancellationToken token) => {
+    context.Response.Headers.CacheControl = "no-store";
+    try { return Results.Ok(await store.ReadAsync(token)); }
+    catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
+    { return Results.Ok(new CompanionSettings()); }
+}).RequireRateLimiting("quotes");
 app.MapAds();
 app.MapCommute();
 app.MapGet("/api/market/usd", async (NavasanService service, HttpContext context, IWebHostEnvironment environment, CancellationToken cancellationToken) =>
