@@ -7,6 +7,7 @@ import { WorkspaceShell } from '@/components/WorkspaceShell';
 import { AppearanceCard } from '@/components/AppearanceCard';
 import { Button } from '@/components/ui/Button';
 import { FocusClock } from '@/features/focus/ui/FocusClock';
+import { ExchangeView } from '@/features/market/exchange/ui/ExchangeView';
 import { SponsoredAds, SponsoredAdsProvider } from '@/features/ads/ui/SponsoredAds';
 import { useCardChoices } from '@/features/workspace/personalization-store';
 import {
@@ -17,10 +18,25 @@ import {
 } from '@/features/workspace/view-mode-store';
 
 export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab' }) {
-  const [view, setView] = useState<'workspace' | 'appearance'>('workspace');
+  const [panelView, setPanelView] = useState<'workspace' | 'exchange'>('workspace');
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const cards = useCardChoices();
   const preference = useSyncExternalStore(subscribeViewMode, getViewMode);
   const ambient = surface === 'newtab' && preference.mode === 'ambient';
+  const view =
+    settingsOpen && !ambient
+      ? 'appearance'
+      : surface === 'newtab'
+        ? preference.mode === 'exchange'
+          ? 'exchange'
+          : 'workspace'
+        : panelView;
+  const chooseView = (next: 'workspace' | 'exchange') => {
+    setSettingsOpen(false);
+    if (surface === 'newtab') setViewMode(next);
+    else setPanelView(next);
+    window.scrollTo({ top: 0 });
+  };
   const modeButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (surface === 'newtab') initializeViewMode();
@@ -56,16 +72,26 @@ export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab
               aria-label="فضای کار"
               title="فضای کار"
               aria-pressed={view === 'workspace'}
-              onClick={() => setView('workspace')}
+              onClick={() => chooseView('workspace')}
             >
               <Icon name="grid" />
+            </Button>
+            <Button
+              variant="ghost"
+              aria-label="نمای صرافی"
+              title="نمای صرافی"
+              aria-pressed={view === 'exchange'}
+              onClick={() => chooseView('exchange')}
+            >
+              <Icon name="currency" />
+              <span>صرافی</span>
             </Button>
             <Button
               variant="ghost"
               aria-label="تنظیمات"
               title="تنظیمات"
               aria-pressed={view === 'appearance'}
-              onClick={() => setView('appearance')}
+              onClick={() => setSettingsOpen(true)}
             >
               <Icon name="settings" />
             </Button>
@@ -83,7 +109,7 @@ export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab
               title={ambient ? 'بازگشت به میزکار (Escape)' : 'نمای آرام؛ ساعت و پس‌زمینه'}
               onClick={() => {
                 setViewMode(ambient ? 'workspace' : 'ambient');
-                setView('workspace');
+                setSettingsOpen(false);
                 window.scrollTo({ top: 0 });
               }}
             >
@@ -116,6 +142,7 @@ export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab
             </>
           )}
         </div>
+        {view === 'exchange' && !ambient && <ExchangeView />}
         {view === 'appearance' && !ambient && <AppearanceCard />}
       </WorkspaceShell>
     </SponsoredAdsProvider>

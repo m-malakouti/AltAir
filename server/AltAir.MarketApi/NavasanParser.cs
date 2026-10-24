@@ -36,7 +36,8 @@ public static class NavasanParser
             { /* An unavailable crypto must not discard valid market rates. */ }
         }
         return new DollarQuote("USD_FREE_SELL", usd.PriceToman, usd.UpdatedAt, now,
-            checked(staleAfterMinutes * 60), false, "نوسان", "https://www.navasan.net/", rates, cryptoRates);
+            checked(staleAfterMinutes * 60), false, "نوسان", "https://www.navasan.net/", rates, cryptoRates,
+            ExchangeParser.Parse(document.RootElement, unit, now));
     }
 
     private static CryptoRate ParseCrypto(JsonElement item, string code, string unit, DateTimeOffset now)

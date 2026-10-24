@@ -9,7 +9,8 @@ public sealed record DollarQuote(
     bool FetchFailed,
     string Source,
     string SourceUrl, IReadOnlyList<CurrencyRate>? Rates = null,
-    IReadOnlyList<CryptoRate>? CryptoRates = null);
+    IReadOnlyList<CryptoRate>? CryptoRates = null,
+    IReadOnlyList<ExchangeAsset>? Assets = null);
 
 public sealed record CurrencyRate(string Code, decimal PriceToman, DateTimeOffset UpdatedAt, decimal? ChangeToman = null);
 

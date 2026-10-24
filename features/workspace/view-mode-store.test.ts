@@ -16,6 +16,16 @@ beforeEach(() => {
 });
 
 describe('new tab view preference', () => {
+  it('restores the exchange view and persists returning to the workspace', async () => {
+    adapter.readWorkspaceValue.mockResolvedValue('exchange');
+    const store = await import('./view-mode-store');
+    store.initializeViewMode();
+    await vi.waitFor(() => expect(store.getViewMode().mode).toBe('exchange'));
+    store.setViewMode('workspace');
+    await vi.waitFor(() =>
+      expect(adapter.writeWorkspaceValue).toHaveBeenCalledWith(store.VIEW_MODE_KEY, 'workspace'),
+    );
+  });
   it('restores ambient mode and follows changes from another tab', async () => {
     adapter.readWorkspaceValue.mockResolvedValue('ambient');
     const store = await import('./view-mode-store');

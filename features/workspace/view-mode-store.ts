@@ -5,7 +5,7 @@ import {
 } from '@/lib/browser/workspace-storage';
 
 export const VIEW_MODE_KEY = 'altAir.workspace.view.v1';
-export type ViewMode = 'workspace' | 'ambient';
+export type ViewMode = 'workspace' | 'ambient' | 'exchange';
 const listeners = new Set<() => void>();
 let snapshot: { mode: ViewMode; error: string } = { mode: 'workspace', error: '' };
 let initialized = false;
@@ -24,7 +24,8 @@ export function initializeViewMode() {
     const current = revision;
     try {
       const value = await readWorkspaceValue(VIEW_MODE_KEY);
-      if (current === revision && !pending) publish(value === 'ambient' ? 'ambient' : 'workspace');
+      if (current === revision && !pending)
+        publish(value === 'ambient' || value === 'exchange' ? value : 'workspace');
     } catch {
       if (current === revision && !pending)
         publish(snapshot.mode, 'خواندن نمای ذخیره‌شده انجام نشد.');

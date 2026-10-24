@@ -1,6 +1,7 @@
 import { currencies, isCurrencyCode } from './currencies';
 import type { CurrencyCode } from './currencies';
 import { parseNavasanCryptoRates, type CryptoRate } from './crypto-rates';
+import { parseExchangeAssets, type ExchangeAsset } from './exchange/exchange-model';
 export interface CurrencyRate {
   code: CurrencyCode;
   changeToman?: number | null;
@@ -8,6 +9,7 @@ export interface CurrencyRate {
   updatedAt: string;
 }
 export interface DollarQuote {
+  assets?: ExchangeAsset[];
   rates?: CurrencyRate[];
   cryptoRates?: CryptoRate[];
   instrument: 'USD_FREE_SELL';
@@ -76,6 +78,7 @@ export function parseDollarQuote(value: unknown, now = Date.now()): DollarQuote 
       throw new Error('Duplicate rates.');
   }
   return {
+    ...(data.assets != null ? { assets: parseExchangeAssets(data.assets, now) } : {}),
     ...(rates ? { rates } : {}),
     ...(data.cryptoRates != null
       ? { cryptoRates: parseNavasanCryptoRates(data.cryptoRates, now) }
