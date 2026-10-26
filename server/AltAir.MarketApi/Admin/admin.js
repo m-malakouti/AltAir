@@ -11,13 +11,12 @@ async function overview() {
     const data = await request('/admin/api/overview');
     $('environment').textContent = data.environment;
     $('updated').textContent = new Date(data.checkedAt).toLocaleTimeString('fa-IR');
-    state('market-state', data.marketConfigured ? 'پیکربندی آماده' : 'نیازمند تنظیم', data.marketConfigured ? '' : 'error');
     $('market-config').textContent = `کلید: ${data.marketKeyPresent ? 'تنظیم شده' : 'تنظیم نشده'} · واحد: ${data.priceUnit || 'نامشخص'}`;
     state('maps-state', 'تست نشده');
     $('maps-result').textContent = `کلید نشان در سرور: ${data.neshanKeyPresent ? 'موجود' : 'تنظیم نشده'}. نقشهٔ گوگل وابسته به تنظیم افزونه است.`;
     for (const [id, key] of [['poll','pollMinutes'],['stale','staleAfterMinutes'],['budget','maxRequestsPerMonth']]) { $(id).value = data.settings[key]; $(id).disabled = false; }
     $('save').disabled = false;
-    $('notice').textContent = 'اطلاعات پیکربندی دریافت شد؛ برای تأیید اتصال هر سرویس، بررسی آن را اجرا کنید.';
+    $('notice').textContent = 'اطلاعات پیکربندی دریافت شد. سلامت سرور و وضعیت ثبت‌شدهٔ قیمت‌ها خودکار تازه می‌شوند؛ آب‌وهوا را دستی بررسی کنید.';
   } catch { $('notice').textContent = 'دریافت اطلاعات انجام نشد. اجرای سرور در حالت Development و آدرس محلی را بررسی کنید.'; }
   finally { $('refresh').disabled = false; }
 }
@@ -48,7 +47,7 @@ async function loadUsers() {
 $('refresh').addEventListener('click', loadUsers);
 setInterval(() => { if (document.visibilityState === 'visible') void loadUsers(); }, 60_000);
 void loadUsers();
-const probes = { health:'/health', market:'/api/market/usd', weather:'/api/weather/current?latitude=35.6892&longitude=51.3890' };
+const probes = { health:'/health', weather:'/api/weather/current?latitude=35.6892&longitude=51.3890' };
 for (const button of document.querySelectorAll('[data-probe]')) button.addEventListener('click', async () => {
   const name = button.dataset.probe;
   button.disabled = true;
@@ -59,21 +58,25 @@ for (const button of document.querySelectorAll('[data-probe]')) button.addEventL
     let detail = '';
     let warning = false;
     if (name === 'health' && data.status !== 'ok') throw new Error('invalid');
+    if (name === 'health') detail = 'سرور در دسترس است';
     if (name === 'weather') {
       if (!Number.isFinite(data.temperature) || !data.observedAt) throw new Error('invalid');
       warning = Date.now() - Date.parse(data.observedAt) > 3600000;
       detail = `تهران: ${data.temperature}° · زمان مشاهده: ${new Date(data.observedAt).toLocaleString('fa-IR')}`;
-    }
-    if (name === 'market') {
-      if (!data.fetchedAt) throw new Error('invalid');
-      warning = Boolean(data.fetchFailed) || Date.now() - Date.parse(data.fetchedAt) > (data.staleAfterSeconds ?? 7200) * 1000;
-      detail = `آخرین دریافت: ${new Date(data.fetchedAt).toLocaleString('fa-IR')}`;
     }
     state(`${name}-state`, warning ? 'دادهٔ قدیمی / دریافت ناموفق' : 'پاسخ معتبر', warning ? 'error' : 'ok');
     $(`${name}-result`).textContent = `${detail} · ${Math.round(performance.now()-started)} ms · بررسی در ${new Date().toLocaleTimeString('fa-IR')}`;
   } catch { state(`${name}-state`, 'بررسی ناموفق', 'error'); $(`${name}-result`).textContent = 'پاسخ معتبر دریافت نشد؛ شبکه، تنظیم سرویس یا محدودیت ارائه‌دهنده را بررسی کنید.'; }
   finally { button.disabled = false; }
 });
+function checkHealth() {
+  const button = document.querySelector('[data-probe="health"]');
+  if (!button.disabled && document.visibilityState === 'visible') button.click();
+}
+checkHealth();
+setInterval(checkHealth, 30_000);
+document.addEventListener('visibilitychange', checkHealth);
+$('refresh').addEventListener('click', checkHealth);
 $('settings-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   $('save').disabled = true;

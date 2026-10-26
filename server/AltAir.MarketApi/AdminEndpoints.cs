@@ -30,7 +30,7 @@ public static class AdminEndpoints
             catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
             { return Results.Json(new { code = "admin_storage_unavailable" }, statusCode: 503); }
         });
-        foreach (var (route, file, mime) in new[] { ("/", "index.html", "text/html"), ("/admin.js", "admin.js", "text/javascript"), ("/ads.js", "ads.js", "text/javascript"), ("/admin.css", "admin.css", "text/css") })
+        foreach (var (route, file, mime) in new[] { ("/", "index.html", "text/html"), ("/admin.js", "admin.js", "text/javascript"), ("/market.js", "market.js", "text/javascript"), ("/ads.js", "ads.js", "text/javascript"), ("/admin.css", "admin.css", "text/css") })
             routes.MapGet(route, () => Results.File(Path.Combine(app.Environment.ContentRootPath, "Admin", file), mime));
         routes.MapGet("/fonts/Vazirmatn-Variable.woff2", () => Results.File(
             Path.Combine(AppContext.BaseDirectory, "Admin", "fonts", "Vazirmatn-Variable.woff2"), "font/woff2"));
@@ -53,6 +53,14 @@ public static class AdminEndpoints
             return Results.Ok(new { saved = true, settings });
         }).RequireRateLimiting("auth");
         routes.MapGet("/api/users", (AuthService auth) => Results.Ok(auth.AdminUsers()));
+        routes.MapGet("/api/market/status", async (NavasanService service, CancellationToken token) =>
+            Results.Ok(await service.GetDiagnosticsAsync(token, localDevelopment: true)));
+        routes.MapPost("/api/market/probe", async (NavasanService service, CancellationToken token) =>
+        {
+            try { await service.GetQuoteAsync(token, localDevelopment: true); }
+            catch (MarketUnavailableException) { /* Diagnostics explain the failure without exposing provider URLs. */ }
+            return Results.Ok(await service.GetDiagnosticsAsync(token, localDevelopment: true));
+        }).RequireRateLimiting("auth");
         routes.MapGet("/api/companion", async (CompanionSettingsStore store, CancellationToken token) => Results.Ok(await store.ReadAsync(token)));
         routes.MapPost("/api/companion", async (CompanionSettings settings, CompanionSettingsStore store, CancellationToken token) => {
             if (!settings.Valid()) return Results.BadRequest(new { code = "invalid_companion_settings" });

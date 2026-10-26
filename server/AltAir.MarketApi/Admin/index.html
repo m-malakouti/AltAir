@@ -1,15 +1,36 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AltAir · مدیریت</title><link rel="stylesheet" href="/admin/admin.css"><script src="/admin/admin.js" defer></script><script src="/admin/ads.js" defer></script></head><body>
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AltAir · مدیریت</title><link rel="stylesheet" href="/admin/admin.css"><script src="/admin/admin.js" defer></script><script src="/admin/market.js" defer></script><script src="/admin/ads.js" defer></script></head><body>
 <aside><a class="brand" href="/admin">✦ AltAir<span>مرکز مدیریت</span></a><nav><a href="#services">وضعیت سرویس‌ها</a><a href="#advertising">تبلیغات</a><a href="#companion">پوفی</a><a href="#users">کاربران</a><a href="#settings">تنظیمات نرخ‌ها</a><a href="#scope">داده‌ها و دسترسی</a></nav><p class="local">نسخهٔ محلی توسعه<br>دسترسی از همین کامپیوتر</p></aside>
 <main><header><div><span class="eyebrow">ALTAIR / CONTROL ROOM</span><h1>نبض سرویس‌های شما</h1><p>وضعیت واقعی اتصال‌ها، تنظیمات دریافت داده و نتیجهٔ آخرین بررسی.</p></div><button id="refresh" type="button">تازه‌سازی وضعیت</button></header><p id="notice" role="status" aria-live="polite">در حال دریافت اطلاعات…</p>
 <section class="metrics"><article><small>محیط اجرا</small><strong id="environment">—</strong></article><article><small>آخرین دریافت تنظیمات</small><strong id="updated">—</strong></article><article><small>حساب‌های کاربران</small><strong id="user-count">در حال دریافت…</strong></article></section>
-<section id="services"><div class="section-title"><h2>وضعیت سرویس‌ها</h2><span>بررسی‌ها دستی هستند</span></div><div class="services">
+<section id="services"><div class="section-title"><h2>وضعیت سرویس‌ها</h2><span>سلامت سرور و وضعیت قیمت‌ها هر ۳۰ ثانیه؛ بررسی آب‌وهوا دستی</span></div><div class="services">
 <article class="service"><div class="service-top"><span class="symbol">◈</span><span class="badge" id="health-state">بررسی نشده</span></div><h3>سرور AltAir</h3><p>در دسترس بودن بک‌اند محلی.</p><output id="health-result">هنوز آزمایش نشده است.</output><button data-probe="health">بررسی اتصال</button></article>
-<article class="service"><div class="service-top"><span class="symbol">↗</span><span class="badge" id="market-state">در حال خواندن…</span></div><h3>ارز، طلا و رمزارز</h3><p id="market-config">تنظیمات Navasan</p><output id="market-result">بررسی ممکن است از سهمیهٔ سرویس استفاده کند.</output><button data-probe="market">بررسی دریافت نرخ</button></article>
+<article class="service"><div class="service-top"><span class="symbol">↗</span><span class="badge" id="market-state">در حال خواندن…</span></div><h3>ارز، طلا و رمزارز</h3><p id="market-config">تنظیمات Navasan</p><output id="market-result">در حال دریافت وضعیت ثبت‌شدهٔ سرور…</output><a class="service-link" href="#market-diagnostics">جزئیات سلامت قیمت‌ها ↓</a></article>
 <article class="service"><div class="service-top"><span class="symbol">☁</span><span class="badge" id="weather-state">بررسی نشده</span></div><h3>آب‌وهوا</h3><p>نمونهٔ هوای فعلی تهران از Open-Meteo.</p><output id="weather-result">تنظیم شهر کاربران تغییر نمی‌کند.</output><button data-probe="weather">بررسی آب‌وهوا</button></article>
 <article class="service"><div class="service-top"><span class="symbol">G</span><span class="badge">داخل افزونه</span></div><h3>ورود با گوگل</h3><p>ورود در Chrome Identity انجام می‌شود.</p><output>تست ورود باید در خود افزونه انجام شود؛ این پنل به نشست کاربران دسترسی ندارد.</output></article>
 <article class="service"><div class="service-top"><span class="symbol">⌖</span><span class="badge" id="maps-state">در حال خواندن…</span></div><h3>نقشه و رفت‌وآمد</h3><p>Google Maps Embed به کلید داخل افزونه نیاز دارد.</p><output id="maps-result">وضعیت نقشهٔ افزونه از سرور قابل تشخیص نیست.</output></article>
 <article class="service"><div class="service-top"><span class="symbol">⚽</span><span class="badge">مستقیم در افزونه</span></div><h3>فوتبال و رسانه</h3><p>اتصال‌های مستقیم مرورگر.</p><output>نتایج فوتبال و پخش رسانه در محیط افزونه بررسی می‌شوند؛ اینجا وضعیت تأییدشده ندارند.</output></article>
 </div></section>
+<section id="market-diagnostics" class="market-diagnostics">
+<div class="section-title"><div><span class="eyebrow">MARKET HEALTH</span><h2>سلامت دریافت قیمت‌ها</h2></div><button id="market-status-refresh" type="button">تازه‌سازی وضعیت</button></div>
+<p>مشاهدهٔ وضعیت از سهمیهٔ نوسان مصرف نمی‌کند. «بررسی دریافت نرخ» از کش و محدودیت فعلی پیروی می‌کند و سهمیه یا زمان انتظار را دور نمی‌زند.</p>
+<p id="market-diagnostics-status" role="status" aria-live="polite">در حال دریافت وضعیت…</p>
+<dl class="market-facts">
+<div><dt>آخرین دریافت موفق سرور</dt><dd id="market-success">—</dd></div>
+<div><dt>زمان قیمت دلار در منبع</dt><dd id="market-source">—</dd></div>
+<div><dt>تازگی دارایی‌ها بر اساس زمان منبع</dt><dd id="market-assets">—</dd></div>
+<div><dt>قدیمی‌ترین قیمت منبع</dt><dd id="market-oldest">—</dd></div>
+<div><dt>جدیدترین قیمت منبع</dt><dd id="market-newest">—</dd></div>
+<div><dt>آستانهٔ کهنگی کش فعلی</dt><dd id="market-stale-policy">—</dd></div>
+<div><dt>آخرین تلاش اتصال به نوسان</dt><dd id="market-attempt">—</dd></div>
+<div><dt>مدت آخرین تلاش</dt><dd id="market-duration">—</dd></div>
+<div><dt>اولین زمان مجاز دریافت بعدی</dt><dd id="market-next">—</dd></div>
+</dl>
+<p>دریافت خودکار زمان‌بندی‌شده نداریم؛ پس از زمان مجاز، اولین درخواست افزونه یا بررسی دستی دریافت را انجام می‌دهد. قیمت‌های قدیمی ممکن است همچنان در کش قابل استفاده باشند.</p>
+<div class="market-budget"><div><h3>سهمیهٔ محلی نوسان</h3><strong id="market-budget">—</strong><p id="market-remaining">—</p><progress id="market-budget-progress" max="120" value="0" aria-label="مصرف سهمیهٔ ماهانهٔ محلی"></progress><p id="market-budget-reset" dir="auto">—</p></div><div><h3>شروع فرایند فعلی</h3><p id="market-started">—</p><p>سهمیه، کش و تاریخچه در حافظهٔ همین فرایند هستند و با ری‌استارت پاک می‌شوند. مصرف نمایش‌داده‌شده، مصرف قطعی حساب ارائه‌دهنده نیست.</p></div></div>
+<h3>آخرین خطای ثبت‌شده</h3><p id="market-error" class="market-error">—</p>
+<button id="market-probe" type="button">بررسی دریافت نرخ</button>
+<details class="market-history"><summary>تاریخچهٔ دریافت از نوسان · حداکثر ۲۰ تلاش اخیر</summary><p id="market-history-empty">از زمان شروع این فرایند هنوز تلاشی ثبت نشده است.</p><div class="market-history-table"><table><thead><tr><th>زمان پایان · تهران</th><th>نتیجه</th><th>HTTP</th><th>مدت</th></tr></thead><tbody id="market-history"></tbody></table></div></details>
+</section>
 <section id="advertising" class="ad-admin">
 <div class="section-title"><div><h2>مدیریت تبلیغات</h2><p>تصویر، GIF یا اسلایدر؛ لینک مستقیم و بدون ثبت کلیک یا هزینه.</p></div><button id="ads-reload" type="button">تازه‌سازی کمپین‌ها</button></div>
 <div class="ad-toolbar"><label><input id="ads-enabled" type="checkbox"> نمایش تبلیغات در افزونه</label><button id="ads-new" type="button">کمپین جدید</button></div><p id="ads-status" role="status" aria-live="polite">در حال دریافت…</p>

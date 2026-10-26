@@ -6,3 +6,16 @@
 #companion-fields { border: 0; padding: 0; display: grid; gap: 14px; }
 #companion-fields label:has(input[type=checkbox]) { display: flex; align-items: center; gap: 10px; }
 #companion-fields input[type=checkbox] { width: 22px; height: 22px; min-height: 0; accent-color: #53968b; }
+.badge[data-state=warning]{background:#493c20;color:#ffe1a0}
+.service-link{color:var(--accent);font-size:12px;text-decoration:none;align-self:start}
+.market-diagnostics{margin-top:28px;padding:28px;border:1px solid var(--line);border-radius:18px;background:var(--card);scroll-margin-top:20px}
+.market-diagnostics .section-title{gap:16px;flex-wrap:wrap}.market-diagnostics p{font-size:12px}.market-diagnostics h2{margin:6px 0}
+.market-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:24px 0}
+.market-facts>div{padding:15px;background:#101b2c;border:1px solid var(--line);border-radius:12px;min-width:0}
+.market-facts dt{font-size:11px;color:var(--muted)}.market-facts dd{margin:8px 0 0;font-size:14px;overflow-wrap:anywhere}
+.market-budget{display:grid;grid-template-columns:1fr 1fr;gap:28px;border-block:1px solid var(--line);padding:16px 0;margin:22px 0}
+.market-budget h3{font-size:14px}.market-budget strong{font-size:20px}.market-budget progress{width:100%;height:12px;accent-color:var(--accent)}
+.market-error[data-state=error]{color:#ffc2cc}#market-diagnostics-status{color:var(--accent);min-height:24px}.market-history{margin-top:24px}.market-history summary{cursor:pointer;color:var(--accent)}.market-history-table{overflow-x:auto}.market-history td{font-size:12px;direction:inherit;text-align:right}.market-history th{font-size:11px;white-space:nowrap}
+summary:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(max-width:1100px){.market-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.market-diagnostics{padding:18px}.market-facts,.market-budget{grid-template-columns:1fr}.section-title{gap:10px;flex-wrap:wrap}.badge{max-width:100%;overflow-wrap:anywhere}}
