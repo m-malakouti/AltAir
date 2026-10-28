@@ -56,6 +56,14 @@ export const cardCatalog = [
     icon: 'note',
   },
   {
+    id: 'portfolio',
+    title: 'سبد دارایی من',
+    detail: 'مقدار دارایی‌ها و برآورد ارزش سبد، فقط روی مرورگر تو.',
+    sample: 'BTC · طلا · سکه',
+    caption: 'مقدار، ارزش و معادل‌های سبد',
+    icon: 'wallet',
+  },
+  {
     id: 'podcast',
     title: 'پادکست',
     detail: 'قسمت‌های دلخواهت از Castbox.',
@@ -81,7 +89,7 @@ export const interestCatalog = [
     cards: ['clock', 'tasks', 'calendar', 'notes'],
   },
   { id: 'technology', title: 'فناوری', cards: ['bookmarks', 'podcast'] },
-  { id: 'finance', title: 'اقتصاد و بازار', cards: ['currencies'] },
+  { id: 'finance', title: 'اقتصاد و بازار', cards: ['currencies', 'portfolio'] },
   { id: 'sports', title: 'ورزش', cards: ['scores'] },
   { id: 'learning', title: 'یادگیری و مطالعه', cards: ['notes', 'podcast', 'bookmarks'] },
   { id: 'travel', title: 'سفر و طبیعت', cards: ['weather', 'calendar'] },
@@ -92,10 +100,17 @@ export const defaultCardChoices = (): CardChoices =>
   Object.fromEntries(cardCatalog.map((card) => [card.id, true])) as CardChoices;
 export function parseCardChoices(value: unknown, fallback = defaultCardChoices()): CardChoices {
   const raw = value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+  const legacyAllHidden =
+    !Object.hasOwn(raw, 'portfolio') &&
+    cardCatalog.filter((card) => card.id !== 'portfolio').every((card) => raw[card.id] === false);
   return Object.fromEntries(
     cardCatalog.map((card) => [
       card.id,
-      typeof raw[card.id] === 'boolean' ? raw[card.id] : fallback[card.id],
+      typeof raw[card.id] === 'boolean'
+        ? raw[card.id]
+        : legacyAllHidden
+          ? false
+          : fallback[card.id],
     ]),
   ) as CardChoices;
 }

@@ -5,6 +5,11 @@ workspace UI and storage adapters with a wider layout. Its manifest entry is
 chrome_url_overrides.newtab = newtab.html. Chrome may ask the user to keep the
 new tab replacement. Existing bookmarks, theme, and favorite currencies are shared.
 
+New Tab renders directly without redirecting to another extension page, preserving
+Chrome's normal New Tab address display. Chrome initially focuses its address bar;
+page-level search focus does not override that browser behavior. See
+[Chrome's New Tab guidance](https://developer.chrome.com/docs/extensions/develop/ui/override-chrome-pages).
+
 ## Minimal weather
 
 The first use asks for a city; there is no implicit city or GPS access.
@@ -53,6 +58,9 @@ Installed-browser UI checks remain pending.
 Reload the unpacked extension, then:
 
 1. Open a new tab and confirm the Alt Air workspace appears.
+   Confirm no redirect or internal `workspace.html` address appears. Click AltAir's
+   Google search and verify typing and submitting. Chrome's initial address-bar
+   focus needs an installed-browser check; DOM focus tests cannot verify it.
 2. Search and select a city, then save with the check icon.
 3. Open Popup and Side Panel; verify the same city and data.
 4. Change cities; verify no previous-city temperature is shown while loading.

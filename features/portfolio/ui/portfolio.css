@@ -1,0 +1,238 @@
+.portfolio-card {
+  min-width: 0;
+  color: var(--color-text);
+}
+.sketch-portfolio {
+  padding: 12px;
+}
+.portfolio-header,
+.portfolio-total-label,
+.portfolio-row-meta,
+.portfolio-row-actions,
+.portfolio-holding-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.portfolio-header,
+.portfolio-total-label,
+.portfolio-row-meta {
+  justify-content: space-between;
+}
+.portfolio-header {
+  margin-bottom: 16px;
+}
+.portfolio-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+}
+.portfolio-total {
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-soft);
+}
+.portfolio-total-label {
+  font-size: 11px;
+  color: var(--color-muted);
+  flex-wrap: wrap;
+}
+.portfolio-card select,
+.portfolio-card input {
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  background: var(--color-surface-solid);
+  padding: 7px 8px;
+  font: inherit;
+}
+.portfolio-total-label select {
+  font-size: 11px;
+}
+.portfolio-total-number {
+  display: block;
+  margin-top: 12px;
+  font-size: clamp(21px, 2.3vw, 30px);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+.portfolio-warning {
+  display: block;
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.9;
+  margin-block: 8px;
+}
+.portfolio-equivalents {
+  margin-block: 12px;
+}
+.portfolio-equivalents summary {
+  cursor: pointer;
+  width: fit-content;
+  font-size: 12px;
+  border-radius: 4px;
+}
+.portfolio-equivalents dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+.portfolio-equivalents dl > div {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px;
+  min-width: 0;
+}
+.portfolio-equivalents dt,
+.portfolio-equivalents small {
+  font-size: 10px;
+  color: var(--color-muted);
+}
+.portfolio-equivalents dd {
+  font-size: 13px;
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
+}
+.portfolio-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 16px 6px;
+}
+.portfolio-empty > .ui-icon {
+  width: 30px;
+  height: 30px;
+  color: var(--color-accent);
+}
+.portfolio-empty p {
+  margin: 0;
+  font-size: 13px;
+}
+.portfolio-empty small {
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1.9;
+}
+.portfolio-holdings {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.portfolio-holdings > li {
+  padding-block: 12px;
+  border-top: 1px solid var(--color-border);
+}
+.portfolio-holding-name strong {
+  font-size: 12px;
+}
+.portfolio-holding-name small,
+.portfolio-holding-values small {
+  font-size: 10px;
+  color: var(--color-muted);
+}
+.portfolio-holding-values {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-block: 8px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.portfolio-holding-values > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.portfolio-row-meta > small {
+  font-size: 10px;
+  line-height: 1.8;
+  color: var(--color-muted);
+}
+.portfolio-row-actions {
+  flex-shrink: 0;
+  gap: 2px;
+}
+.portfolio-row-actions .icon-button {
+  width: 28px;
+  height: 28px;
+}
+.portfolio-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 10px;
+  border: 1px dashed var(--color-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.portfolio-card button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.portfolio-form fieldset {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
+  min-width: 0;
+}
+.portfolio-form label {
+  font-size: 12px;
+}
+.portfolio-form small {
+  color: var(--color-muted);
+  font-size: 10px;
+  line-height: 1.8;
+}
+.portfolio-form-actions,
+.portfolio-delete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.portfolio-form-actions .button {
+  font-size: 12px;
+}
+.portfolio-delete {
+  font-size: 12px;
+  border: 1px solid var(--color-border);
+  padding: 10px;
+  border-radius: 10px;
+}
+.portfolio-delete button {
+  padding: 6px 10px;
+  color: var(--color-text);
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+}
+.portfolio-footnote {
+  display: grid;
+  gap: 4px;
+  border-top: 1px solid var(--color-border);
+  margin-top: 14px;
+  padding-top: 10px;
+  font-size: 10px;
+  line-height: 1.9;
+  color: var(--color-muted);
+}

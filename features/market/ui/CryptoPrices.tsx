@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { cryptoCoins } from '../crypto-rates';
 import { getMarketSnapshot, refreshMarket, subscribeMarket } from '../market-store';
 import { Icon } from '@/components/ui/Icon';
+import { AnimatedPrice } from './AnimatedPrice';
 import {
   readWorkspaceValue,
   writeWorkspaceValue,
@@ -9,6 +10,7 @@ import {
 } from '@/lib/browser/workspace-storage';
 const selectionKey = 'altAir.market.crypto-selection';
 const defaults = ['BTC', 'ETH', 'SOL', 'USDT'];
+const tomanFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 
 export function CryptoPrices() {
   const { status, quote: basket, error } = useSyncExternalStore(subscribeMarket, getMarketSnapshot);
@@ -176,7 +178,17 @@ export function CryptoPrices() {
                 <span>{coin.code}USD</span>
               </span>
               <strong dir="ltr">
-                {quote ? format(quote.priceUsd) : loading ? '…' : '—'}
+                {quote ? (
+                  <AnimatedPrice
+                    value={quote.priceUsd}
+                    valueKey={`${coin.code}:USD`}
+                    format={format}
+                  />
+                ) : loading ? (
+                  '…'
+                ) : (
+                  '—'
+                )}
                 {coin.code === 'USDT' && (
                   <small
                     className="crypto-toman-price"
@@ -188,11 +200,17 @@ export function CryptoPrices() {
                     }
                   >
                     <bdi dir="ltr">
-                      {quote?.priceToman != null
-                        ? quote.priceToman.toLocaleString('en-US', { maximumFractionDigits: 0 })
-                        : loading
-                          ? '…'
-                          : '—'}
+                      {quote?.priceToman != null ? (
+                        <AnimatedPrice
+                          value={quote.priceToman}
+                          valueKey={`${coin.code}:toman`}
+                          format={(value) => tomanFormat.format(value)}
+                        />
+                      ) : loading ? (
+                        '…'
+                      ) : (
+                        '—'
+                      )}
                     </bdi>{' '}
                     تومان
                   </small>

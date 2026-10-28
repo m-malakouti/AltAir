@@ -1,5 +1,12 @@
 import { parseOrder } from './workspace-model';
-export const widgetIds = ['calendar', 'bookmarks', 'weather', 'currencies', 'notes'] as const;
+export const widgetIds = [
+  'calendar',
+  'bookmarks',
+  'weather',
+  'currencies',
+  'notes',
+  'portfolio',
+] as const;
 export type WidgetId = (typeof widgetIds)[number];
 export const widths = [4, 6, 8, 12] as const;
 export type Width = (typeof widths)[number];
@@ -19,6 +26,7 @@ const defaults: Record<WidgetId, Width> = {
   weather: 4,
   currencies: 4,
   notes: 4,
+  portfolio: 4,
 };
 export function defaultLayout(): Layout {
   return {
@@ -28,7 +36,7 @@ export function defaultLayout(): Layout {
 }
 export function parseLayout(value: unknown, legacy?: unknown): Layout {
   if (value == null) {
-    const order: WidgetId[] = ['calendar', ...parseOrder(legacy)];
+    const order: WidgetId[] = ['calendar', ...parseOrder(legacy), 'portfolio'];
     return {
       version: 2,
       widgets: order.map((id) => ({ id, width: defaults[id], tall: false, hidden: false })),
@@ -56,8 +64,9 @@ export function parseLayout(value: unknown, legacy?: unknown): Layout {
       hidden: item.hidden === true,
     });
   }
+  const allHidden = result.length > 0 && result.every((widget) => widget.hidden);
   for (const widget of defaultLayout().widgets)
-    if (!result.some((w) => w.id === widget.id)) result.push(widget);
+    if (!result.some((w) => w.id === widget.id)) result.push({ ...widget, hidden: allHidden });
   return { version: 2, widgets: result };
 }
 export type LayoutAction =

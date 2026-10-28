@@ -21,6 +21,17 @@ import {
 } from '../exchange-storage';
 import './exchange-view.css';
 import { AssetSymbol } from './AssetSymbol';
+import { AnimatedPrice } from '../../ui/AnimatedPrice';
+
+function AssetPrice({ asset }: { asset: ExchangeAsset }) {
+  return (
+    <AnimatedPrice
+      value={asset.price}
+      valueKey={`${asset.id}:${asset.unit}`}
+      format={(value) => formatPrice(value, asset.unit)}
+    />
+  );
+}
 
 function ageLabel(time: string, now: number) {
   const minutes = Math.max(0, Math.floor((now - Date.parse(time)) / 60000));
@@ -556,7 +567,7 @@ export function ExchangeView({ active = true }: { active?: boolean }) {
                     <span className="ex-tile-name">{asset.name}</span>
                     <AssetSymbol asset={asset} />
                     <span className="ex-tile-price" dir="ltr">
-                      {formatPrice(asset.price, asset.unit)} <small>{unitLabel(asset.unit)}</small>
+                      <AssetPrice asset={asset} /> <small>{unitLabel(asset.unit)}</small>
                     </span>
                     <span className="ex-tile-percent" dir="ltr">
                       {asset.percent !== null
@@ -620,7 +631,9 @@ export function ExchangeView({ active = true }: { active?: boolean }) {
                       </button>
                     </td>
                     <td>
-                      <bdi>{formatPrice(asset.price, asset.unit)}</bdi>
+                      <bdi>
+                        <AssetPrice asset={asset} />
+                      </bdi>
                       <small>{unitLabel(asset.unit)}</small>
                     </td>
                     <td>
@@ -690,7 +703,9 @@ export function ExchangeView({ active = true }: { active?: boolean }) {
                   ×
                 </button>
                 <strong>{asset.name}</strong>
-                <bdi>{formatPrice(asset.price, asset.unit)}</bdi>
+                <bdi>
+                  <AssetPrice asset={asset} />
+                </bdi>
                 <span>
                   {unitLabel(asset.unit)} · {asset.basis}
                 </span>
@@ -738,7 +753,9 @@ export function ExchangeView({ active = true }: { active?: boolean }) {
               </button>
             </header>
             <div className={`ex-detail-price ex-text-tone--${changeTone(detail, isStale(detail))}`}>
-              <strong dir="ltr">{formatPrice(detail.price, detail.unit)}</strong>
+              <strong dir="ltr">
+                <AssetPrice asset={detail} />
+              </strong>
               <span>{unitLabel(detail.unit)}</span>
               <bdi>{formatPercent(detail.percent)}</bdi>
               <small>{periodLabel(detail)}</small>
@@ -783,7 +800,14 @@ export function ExchangeView({ active = true }: { active?: boolean }) {
                 <>
                   <dt>نرخ تومانی مستقل منبع</dt>
                   <dd>
-                    <bdi>{formatPrice(detail.priceToman, 'toman')}</bdi> تومان
+                    <bdi>
+                      <AnimatedPrice
+                        value={detail.priceToman}
+                        valueKey={`${detail.id}:toman`}
+                        format={(value) => formatPrice(value, 'toman')}
+                      />
+                    </bdi>{' '}
+                    تومان
                     {detail.tomanUpdatedAt && (
                       <small>
                         {isAssetStale(

@@ -289,7 +289,7 @@ export function BookmarkManager() {
           </div>
         </div>
       )}
-      <ul className="bookmark-list">
+      <ul className="bookmark-list" dir="ltr">
         {topItems.map((item) => (
           <li
             className={`bookmark-tile bookmark-tile--frequent ${contextId === item.url ? 'is-context-open' : ''}`}
@@ -313,7 +313,7 @@ export function BookmarkManager() {
               title={item.title + '\n' + item.url}
             >
               <BookmarkPreview key={item.url} url={item.url} title={item.title} />
-              <strong>{item.title}</strong>
+              <strong dir="auto">{item.title}</strong>
               <span className="sr-only">پرتکرار؛ باز شدن در برگهٔ جدید</span>
             </a>
             <div className="bookmark-actions">
@@ -346,19 +346,6 @@ export function BookmarkManager() {
             </div>
           </li>
         ))}
-        <li className="bookmark-add-cell">
-          <button
-            ref={addButton}
-            type="button"
-            className="bookmark-add"
-            disabled={unavailable}
-            aria-label="افزودن بوکمارک"
-            title="افزودن بوکمارک"
-            onClick={() => openEditor('new')}
-          >
-            <Icon name="plus" />
-          </button>
-        </li>
         {items.map((item) => (
           <li
             key={item.id}
@@ -382,7 +369,7 @@ export function BookmarkManager() {
               title={item.title + '\n' + item.url}
             >
               <BookmarkPreview key={item.url} url={item.url} title={item.title} />
-              <strong>{item.title}</strong>
+              <strong dir="auto">{item.title}</strong>
               <span className="sr-only">، باز شدن در برگهٔ جدید</span>
             </a>
             <div className="bookmark-actions">
@@ -415,6 +402,19 @@ export function BookmarkManager() {
             </div>
           </li>
         ))}
+        <li className="bookmark-add-cell">
+          <button
+            ref={addButton}
+            type="button"
+            className="bookmark-add"
+            disabled={unavailable}
+            aria-label="افزودن بوکمارک"
+            title="افزودن بوکمارک"
+            onClick={() => openEditor('new')}
+          >
+            <Icon name="plus" />
+          </button>
+        </li>
       </ul>
       {data && query && items.length === 0 && topItems.length === 0 && (
         <p className="helper-text">نتیجه‌ای پیدا نشد.</p>

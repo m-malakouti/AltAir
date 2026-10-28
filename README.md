@@ -168,6 +168,14 @@ Existing saved addresses are preserved. The map loads only on the active slide;
 this mode does not select coordinates into the form or call the Neshan backend.
 See [commute setup and behavior](docs/commute.md).
 
+## Local asset portfolio
+
+New Tab and Side Panel include a local portfolio for currency, gold, coins and
+crypto holdings. It values quantities using the shared market snapshot, shows
+toman/rial/USD/BTC equivalents, labels stale or incomplete estimates, and masks
+private numbers with a persistent eye control. No account is required and holdings
+are not sent to the server. See [portfolio behavior and checks](docs/portfolio.md).
+
 ## Sponsored image and GIF placements
 
 The local admin dashboard manages image/GIF campaigns and multi-slide creatives, scheduling, placement and a global stop switch. New Tab and Side Panel fetch eligible campaigns independently of personal bookmarks. Users can hide a brand or disable ads; ambient/offline views remain ad-free. See [advertising](docs/advertising.md).

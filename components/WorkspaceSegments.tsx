@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { BookmarkManager } from '@/features/bookmarks/ui/BookmarkManager';
 import { WeatherCard } from '@/features/weather/ui/WeatherCard';
 import { CurrencyBoard } from '@/features/market/ui/CurrencyBoard';
+import { PortfolioCard } from '@/features/portfolio/ui/PortfolioCard';
 import { StickyNotes } from '@/features/notes/ui/StickyNotes';
 import { CalendarHero } from '@/features/calendar/ui/CalendarHero';
 import { defaultLayout } from '@/features/workspace/layout-model';
@@ -18,6 +19,7 @@ const titles = {
   weather: 'آب‌وهوا',
   currencies: 'نرخ بازار',
   notes: 'یادداشت‌ها',
+  portfolio: 'سبد دارایی من',
 };
 const icons: Record<WidgetId, IconName> = {
   calendar: 'calendar',
@@ -25,6 +27,7 @@ const icons: Record<WidgetId, IconName> = {
   weather: 'weather',
   currencies: 'currency',
   notes: 'note',
+  portfolio: 'wallet',
 };
 export function WorkspaceSegments() {
   const cardChoices = useCardChoices();
@@ -87,6 +90,7 @@ export function WorkspaceSegments() {
     weather: <WeatherCard />,
     currencies: <CurrencyBoard />,
     notes: <StickyNotes />,
+    portfolio: <PortfolioCard />,
   };
   const displayedWidgets = layout.widgets.map((w) => ({ ...w, hidden: !cardChoices[w.id] }));
   const visible = displayedWidgets.filter((w) => !w.hidden);

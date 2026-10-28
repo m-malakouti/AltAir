@@ -6,6 +6,7 @@ import { GlassCard } from '@/components/ui/GlassCard';
 import { getMarketSnapshot, refreshMarket, subscribeMarket } from '../market-store';
 import { dailyChangePercent } from '../daily-change';
 import { isQuoteStale } from '../dollar-quote';
+import { AnimatedPrice } from './AnimatedPrice';
 
 const numberFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 const changeFormat = new Intl.NumberFormat('en-US', {
@@ -86,7 +87,11 @@ export function DollarCard({
             {quote ? (
               <>
                 <strong dir="ltr" title={numberFormat.format(quote.priceToman)}>
-                  {numberFormat.format(quote.priceToman)}
+                  <AnimatedPrice
+                    value={quote.priceToman}
+                    valueKey={`${code}:toman`}
+                    format={(value) => numberFormat.format(value)}
+                  />
                 </strong>
 
                 <span

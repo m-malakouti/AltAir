@@ -4,7 +4,7 @@ describe('custom workspace layout', () => {
   it('migrates saved order and adds the calendar hero', () => {
     expect(
       parseLayout(null, ['notes', 'weather', 'currencies', 'bookmarks']).widgets.map((w) => w.id),
-    ).toEqual(['calendar', 'notes', 'weather', 'currencies', 'bookmarks']);
+    ).toEqual(['calendar', 'notes', 'weather', 'currencies', 'bookmarks', 'portfolio']);
   });
   it('normalizes duplicate widgets and unsafe width values', () => {
     const layout = parseLayout({
@@ -15,7 +15,7 @@ describe('custom workspace layout', () => {
         { id: 'invalid', width: 4 },
       ],
     });
-    expect(layout.widgets).toHaveLength(5);
+    expect(layout.widgets).toHaveLength(6);
     expect(layout.widgets[0]).toMatchObject({ id: 'notes', width: 4 });
   });
   it('preserves sizes and visibility when moving cards', () => {
@@ -39,6 +39,12 @@ describe('custom workspace layout', () => {
       w.hidden = true;
     });
     expect(parseLayout(layout).widgets.every((w) => w.hidden)).toBe(true);
+    expect(
+      parseLayout({
+        ...layout,
+        widgets: layout.widgets.filter((w) => w.id !== 'portfolio'),
+      }).widgets.every((w) => w.hidden),
+    ).toBe(true);
     expect(() => parseLayout({ version: 99, widgets: [] })).toThrow();
   });
 });

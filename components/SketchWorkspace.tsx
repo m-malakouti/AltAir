@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react';
 import { CalendarHero } from '@/features/calendar/ui/CalendarHero';
 import { WeatherCard } from '@/features/weather/ui/WeatherCard';
 import { CurrencyBoard } from '@/features/market/ui/CurrencyBoard';
+import { PortfolioCard } from '@/features/portfolio/ui/PortfolioCard';
 import { StickyNotes } from '@/features/notes/ui/StickyNotes';
 import { WorkspaceCarousel } from './WorkspaceCarousel';
 import { FocusClock } from '@/features/focus/ui/FocusClock';
@@ -70,6 +71,9 @@ export function SketchWorkspace({
         <Slot area="market" title="نرخ بازار" hidden={!cards.currencies}>
           <CurrencyBoard />
         </Slot>
+        <section className="sketch-card sketch-portfolio" hidden={!cards.portfolio}>
+          <PortfolioCard />
+        </section>
         <Slot area="podcast" title="Castbox" hidden={!cards.podcast}>
           <CastboxCard />
         </Slot>

@@ -640,7 +640,7 @@
   font-size: 21px;
   overflow-wrap: anywhere;
 }
-.ex-comparison-grid span,
+.ex-comparison-grid article > span,
 .ex-comparison-grid small {
   color: var(--ex-muted);
   font-size: 11px;

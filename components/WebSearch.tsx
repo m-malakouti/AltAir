@@ -6,8 +6,10 @@ export function WebSearch() {
   const id = useId();
   return (
     <div className="web-search-row">
+      <TopSitesSettings />
       <form
         className="web-search"
+        dir="ltr"
         role="search"
         aria-label="جست‌وجوی وب"
         action="https://www.google.com/search"
@@ -18,16 +20,6 @@ export function WebSearch() {
         <label className="sr-only" htmlFor={id}>
           جست‌وجو در وب
         </label>
-        <Icon name="search" />
-        <input
-          id={id}
-          type="search"
-          name="q"
-          required
-          maxLength={500}
-          placeholder="جست‌وجو در وب…"
-          autoComplete="off"
-        />
         <button
           type="submit"
           className="icon-button"
@@ -36,8 +28,17 @@ export function WebSearch() {
         >
           <Icon name="search" />
         </button>
+        <input
+          id={id}
+          type="search"
+          dir="auto"
+          name="q"
+          required
+          maxLength={500}
+          placeholder="Search Google or type a URL"
+          autoComplete="off"
+        />
       </form>
-      <TopSitesSettings />
     </div>
   );
 }

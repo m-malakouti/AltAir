@@ -94,6 +94,14 @@ or an extension UI. Those values would be visible to users of the extension.
 
 ## Data and failure behavior
 
+Market prices count up on first visible display over 800 ms, then animate upward
+or downward from the currently displayed number when a real price changes. This
+presentation effect applies to currency/metals cards, crypto prices, and exchange
+prices; it does not fetch, persist, or create additional price observations.
+Screen readers receive the exact target price without intermediate announcements.
+Reduced motion, hidden tabs/workspaces, offscreen rows, and unit/asset switches
+display the target immediately. Copy and estimate actions retain the actual quote.
+
 The proxy returns `USD_FREE_SELL`, `priceToman`, provider `updatedAt`, successful
 `fetchedAt`, `staleAfterSeconds`, `fetchFailed`, and Navasan attribution.
 The extension validates the response and persists a versioned, endpoint-specific

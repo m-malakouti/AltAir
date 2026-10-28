@@ -11,6 +11,8 @@ describe('workspace personalization', () => {
     const cards = defaultCardChoices();
     for (const key of Object.keys(cards) as (keyof typeof cards)[]) cards[key] = false;
     expect(parseCardChoices(cards)).toEqual(cards);
+    const legacy = Object.fromEntries(Object.entries(cards).filter(([id]) => id !== 'portfolio'));
+    expect(parseCardChoices(legacy).portfolio).toBe(false);
     expect(parseInterests(['sports', 'sports', 'unknown', 'finance'])).toEqual([
       'finance',
       'sports',

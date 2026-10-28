@@ -24,7 +24,8 @@ export default defineConfig({
         : {}),
       optional_permissions: ['topSites', 'notifications'],
       content_security_policy: {
-        extension_pages: "script-src 'self'; object-src 'self'; frame-src https://www.google.com;",
+        extension_pages:
+          "script-src 'self'; object-src 'self'; frame-src https://www.google.com https://castbox.fm;",
       },
       host_permissions: [
         ...CONNECTIVITY_ORIGINS.map((origin) => `${origin}/*`),

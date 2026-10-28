@@ -797,8 +797,12 @@ h3 {
 }
 .workspace-navigation .button {
   padding: 7px;
-  width: 34px;
+  width: auto;
+  min-width: 34px;
   min-height: 34px;
+  flex-shrink: 0;
+  gap: 6px;
+  white-space: nowrap;
   border-radius: 9px;
 }
 .ui-icon {
@@ -1026,6 +1030,9 @@ h3 {
   color: var(--color-accent);
   font-family: inherit;
   font-size: 17px;
+}
+.animated-price {
+  font-variant-numeric: tabular-nums;
 }
 .currency-price {
   display: flex;
@@ -1850,7 +1857,7 @@ h3 {
 .web-search {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   min-width: 0;
   padding: 4px 10px;
   border: 1px solid var(--color-border);
@@ -1868,17 +1875,17 @@ h3 {
   background: transparent;
   color: var(--color-text);
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
 }
 .web-search input::placeholder {
   color: var(--color-muted);
 }
-.web-search > .ui-icon {
+.web-search input:focus-visible {
+  outline: none;
+}
+.web-search > .icon-button .ui-icon {
   width: 16px;
   height: 16px;
-}
-.web-search:focus-within {
-  border-color: var(--color-ring);
 }
 @media (prefers-reduced-transparency: reduce) {
   .web-search {
@@ -2037,7 +2044,7 @@ h3 {
 .sketch-search {
   direction: rtl;
   text-align: center;
-  padding: 8px 0 0;
+  padding: 0;
 }
 .sketch-search > span {
   display: block;
@@ -3044,7 +3051,7 @@ body,
 .web-search-row .top-sites-options {
   position: absolute;
   z-index: 10;
-  left: 0;
+  right: 0;
   top: 100%;
   width: min(300px, 100%);
   background: var(--color-surface-solid);
@@ -4506,7 +4513,7 @@ summary.icon-button::-webkit-details-marker {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
   padding-inline: 4px;
 }
 .carousel-tabs {
@@ -5295,11 +5302,11 @@ summary.icon-button::-webkit-details-marker {
 .search-google-only {
   display: grid;
   place-items: center;
-  min-height: 94px;
-  padding: 12px;
+  padding: 0 0 8px;
 }
 .search-google-only .google-logo {
   width: min(160px, 60%);
+  height: auto;
   margin: 0;
 }
 .search-google-only .google-logo img {
