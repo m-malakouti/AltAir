@@ -1,0 +1,177 @@
+.free-layout {
+  min-width: 0;
+}
+.free-card-picker {
+  position: relative;
+  z-index: 60;
+}
+.free-card-picker summary {
+  cursor: pointer;
+  list-style: none;
+}
+.free-card-picker summary::-webkit-details-marker {
+  display: none;
+}
+.free-card-picker-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  width: 210px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-solid);
+  box-shadow: var(--shadow-card);
+}
+.free-card-picker-menu label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  font-size: 12px;
+}
+.free-layout [hidden] {
+  display: none !important;
+}
+.free-layout--ambient,
+.free-layout--ambient .free-board,
+.free-layout--ambient .free-card,
+.free-layout--ambient .free-card-content {
+  display: contents;
+}
+.free-layout-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.free-layout-toolbar .button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+.free-layout-status,
+.free-layout-help {
+  font-size: 11px;
+  color: var(--color-muted);
+}
+.free-layout-help {
+  margin: 8px 0 16px;
+  line-height: 1.9;
+}
+.free-layout-error {
+  font-size: 12px;
+  line-height: 1.9;
+}
+.free-board {
+  position: relative;
+  direction: ltr;
+  min-width: 0;
+  width: 100%;
+  isolation: isolate;
+}
+.free-card {
+  position: absolute;
+  min-width: 0;
+  direction: rtl;
+  border-radius: var(--radius-card);
+}
+.free-card:focus-within {
+  z-index: 40 !important;
+}
+.free-card--dragging {
+  z-index: 50 !important;
+  box-shadow: 0 12px 38px rgb(0 0 0 / 25%);
+}
+.free-card-content {
+  display: flow-root;
+  min-width: 0;
+}
+.free-card-grip {
+  position: absolute;
+  left: 8px;
+  top: -24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100% - 16px);
+  padding: 2px 8px;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-solid);
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 10px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  opacity: 0;
+}
+.free-card-grip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.free-card-grip .ui-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.free-card:hover > .free-card-grip,
+.free-card-grip:focus-visible,
+.free-layout--editing .free-card-grip {
+  opacity: 1;
+}
+.free-card-grip:disabled {
+  cursor: default;
+}
+.free-card--dragging .free-card-grip {
+  cursor: grabbing;
+}
+.free-layout--editing .free-card {
+  outline: 1px dashed var(--color-border);
+  outline-offset: 3px;
+}
+.free-workspace.sketch-workspace {
+  display: block;
+  min-width: 0;
+}
+.free-workspace .sketch-date,
+.free-workspace .sketch-clock {
+  min-height: 0;
+}
+.free-workspace .sketch-date .calendar-hero {
+  padding: 12px;
+}
+.free-workspace .sketch-date .hero-today {
+  text-align: center;
+}
+.free-workspace .sketch-date .hero-gregorian {
+  font-size: 10px;
+}
+.free-workspace .sketch-date .hero-occasion {
+  margin: 0;
+  padding: 5px 0 0;
+  font-size: 9px;
+}
+.free-workspace .sketch-notes {
+  min-height: 220px;
+}
+.free-workspace--quiet .focus-clock {
+  padding: 24px;
+  gap: 18px;
+}
+.free-workspace--quiet .focus-ring {
+  width: 230px;
+}
+.free-workspace--quiet .focus-timer {
+  font-size: 56px;
+}
+@media (hover: none) {
+  .free-card-grip {
+    opacity: 1;
+  }
+}

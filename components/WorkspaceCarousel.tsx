@@ -9,7 +9,7 @@ import { Icon } from './ui/Icon';
 import { ActionButton } from './ui/ActionButton';
 import { useCompanionSettings } from '@/features/workspace/companion-settings';
 
-const slides = [
+const baseSlides = [
   { label: 'جست‌وجو و بوکمارک‌ها', icon: 'search' },
   { label: 'رفت‌وآمد من', icon: 'route' },
 ] as const;
@@ -17,10 +17,15 @@ const slides = [
 export function WorkspaceCarousel({
   companionActive = true,
   bookmarksVisible = true,
+  includeBookmarks = true,
 }: {
   companionActive?: boolean;
   bookmarksVisible?: boolean;
+  includeBookmarks?: boolean;
 }) {
+  const slides = includeBookmarks
+    ? baseSlides
+    : [{ ...baseSlides[0], label: 'جست‌وجو' }, baseSlides[1]];
   const companion = useCompanionSettings(companionActive);
   const [active, setActive] = useState(0);
   const [height, setHeight] = useState<number>();
@@ -157,13 +162,15 @@ export function WorkspaceCarousel({
                     </div>
                     <WebSearch />
                   </section>
-                  <section
-                    className="sketch-card sketch-bookmarks"
-                    aria-label="بوکمارک‌ها"
-                    hidden={!bookmarksVisible}
-                  >
-                    <BookmarkManager />
-                  </section>
+                  {includeBookmarks && (
+                    <section
+                      className="sketch-card sketch-bookmarks"
+                      aria-label="بوکمارک‌ها"
+                      hidden={!bookmarksVisible}
+                    >
+                      <BookmarkManager />
+                    </section>
+                  )}
                   <SavedCommuteCard onOpen={() => select(1, true)} />
                 </div>
               ) : (

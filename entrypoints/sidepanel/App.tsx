@@ -1,15 +1,11 @@
 import { SketchWorkspace } from '@/components/SketchWorkspace';
-import { WorkspaceSegments } from '@/components/WorkspaceSegments';
-import { WebSearch } from '@/components/WebSearch';
 import { Icon } from '@/components/ui/Icon';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { WorkspaceShell } from '@/components/WorkspaceShell';
 import { AppearanceCard } from '@/components/AppearanceCard';
 import { Button } from '@/components/ui/Button';
-import { FocusClock } from '@/features/focus/ui/FocusClock';
 import { ExchangeView } from '@/features/market/exchange/ui/ExchangeView';
-import { SponsoredAds, SponsoredAdsProvider } from '@/features/ads/ui/SponsoredAds';
-import { useCardChoices } from '@/features/workspace/personalization-store';
+import { SponsoredAdsProvider } from '@/features/ads/ui/SponsoredAds';
 import {
   getViewMode,
   initializeViewMode,
@@ -20,7 +16,6 @@ import {
 export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab' }) {
   const [panelView, setPanelView] = useState<'workspace' | 'exchange'>('workspace');
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const cards = useCardChoices();
   const preference = useSyncExternalStore(subscribeViewMode, getViewMode);
   const ambient = surface === 'newtab' && preference.mode === 'ambient';
   const view =
@@ -129,18 +124,7 @@ export default function App({ surface = 'panel' }: { surface?: 'panel' | 'newtab
           </>
         )}
         <div className="workspace-view" hidden={view !== 'workspace' && !ambient}>
-          {surface === 'newtab' ? (
-            <SketchWorkspace ambient={ambient} active={view === 'workspace'} />
-          ) : (
-            <>
-              <div hidden={!cards.clock}>
-                <FocusClock />
-              </div>
-              <WebSearch />
-              <WorkspaceSegments />
-              <SponsoredAds placement="sidebar" />
-            </>
-          )}
+          <SketchWorkspace surface={surface} ambient={ambient} active={view === 'workspace'} />
         </div>
         {view === 'exchange' && !ambient && <ExchangeView />}
         {view === 'appearance' && !ambient && <AppearanceCard />}

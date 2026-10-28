@@ -123,10 +123,10 @@ also paused while the New Tab ambient view is active.
 
 ## Movable workspace and sticky notes
 
-Side Panel and New Tab contain four independently movable sections: bookmarks,
-weather, currencies, and notes. Drag a section by its grip onto another section,
-or use the up/down buttons (also usable with keyboard or touch). Order is saved
-locally and shared between workspace views.
+Side Panel and New Tab support freely movable cards, including bookmarks,
+weather, currencies, notes and portfolio. Move a card using its grip or keyboard
+arrows. Positions persist locally; matching open views synchronize automatically.
+Each surface retains its own responsive layout.
 
 Sticky notes support adding, editing, three colors, and confirmed deletion.
 Press Save after editing; unsaved changes are explicitly indicated. Notes stay
@@ -140,26 +140,25 @@ city's timezone. The backend requests hourly data from
 elapsed forecast hours. Restart the local API after updating its code and reload
 the extension. Old weather caches remain readable and trigger an hourly refresh.
 
-## Custom page layout
+## Free card layout
 
-The New Tab uses a 12-track CSS Grid inspired by
-[Grid by Example: Nested Grid](https://gridbyexample.com/examples/example21/).
-Calendar, bookmarks, weather, currencies and notes participate in the same grid;
-the calendar defaults to 8 tracks and other cards to 4. Each widget contains its
-own inner layout. Below 900px the cards use the full width for readability.
+New Tab and Side Panel support independent mouse, touch and keyboard movement of
+every workspace card. Drag a card's handle anywhere on its canvas; changes save
+automatically and synchronize matching open views. Search/commute share one card,
+while bookmarks move independently. Arrow keys move a focused handle, Shift makes
+larger moves, Home restores that card, and Escape cancels an unfinished drag.
 
-The icon-only customization control reveals drag handles, accessible previous/
-next controls, width cycling (4/6/8/12), taller-card toggle, visibility toggles,
-and layout reset. Changes persist in `altAir.workspace.layout.v2`, synchronizing
-open views. Existing v1 order is migrated without rewriting user content. Hidden
-widgets remain mounted so unsaved drafts survive hide/show. Reset affects only
-layout. Calendar date numbers remain visible; action buttons use icons with
-accessible names and tooltips.
+The visible reset control restores the current surface's default layout without
+changing card visibility, saved content or unsaved drafts. Narrow, medium and wide
+canvas sizes keep separate positions, and each uses a responsive default until
+customized. Positions use versioned local storage; the previous layout and
+personalization data remain intact. See [free card layout](docs/free-card-layout.md)
+for persistence, failure behavior and installed-browser acceptance checks.
 
 ## Search and commute carousel
 
-New Tab groups Google search and bookmarks on the first slide and home/work
-commuting on the second. Icon tabs, arrow/Home/End keys and touch control a
+New Tab groups Google search on the first slide and home/work commuting on the
+second, with bookmarks in a separate movable card. Icon tabs, arrow/Home/End keys and touch control a
 responsive slider with automatic content height and reduced-motion support.
 Home/work addresses stay in local browser storage. The second slide now uses
 Google Maps Embed API for displaying driving directions, distance and travel time

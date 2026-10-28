@@ -25,7 +25,7 @@ export function WorkspaceShell({
     <div className={`workspace workspace--${surface} ${ambient ? 'workspace--ambient' : ''}`}>
       <BrandHeader navigation={navigation} compact={surface === 'newtab'} />
       <main className="workspace-content">
-        {surface !== 'newtab' && <AccountCard />}
+        {surface === 'popup' && <AccountCard />}
         {children}
       </main>
       {error && (
